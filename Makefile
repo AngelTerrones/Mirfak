@@ -51,7 +51,7 @@ build-mirfak: verilate-mirfak
 # ------------------------------------------------------------------------------
 # verilator tests
 run-mirfak-tests: compile-tests build-mirfak
-	@$(eval .RVTESTS:=$(shell find $(.RVTESTSF) -name "rv32ui*.elf" -o -name "rv32mi*.elf" ! -name "*breakpoint*.elf"))
+	@$(eval .RVTESTS:=$(shell find $(.RVTESTSF) -name "rv32ui*.elf" -o -name "rv32um*.elf" -o -name "rv32mi*.elf" ! -name "*breakpoint*.elf"))
 	@for file in $(.RVTESTS); do \
 		$(.MIRFAKCMD) $$file > /dev/null; \
 		if [ $$? -eq 0 ]; then \

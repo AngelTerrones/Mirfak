@@ -22,6 +22,7 @@
 `timescale 1 ns / 1 ps
 
 module mirfak_controller #(
+                           parameter [0:0]  ENABLE_MULTDIV = 1,
                            parameter UCONTROL = ""
                            )(
                              input wire [31:0]      id_instruction_i,
@@ -38,6 +39,7 @@ module mirfak_controller #(
                              // Busy signals
                              input wire             wb_lsu_busy_i,
                              input wire             wb_csr_busy_i,
+                             input wire             ex_busy_i,
                              input wire             if_ready_i,
                              // kill sources
                              input wire             wb_exception_i,
@@ -81,7 +83,7 @@ module mirfak_controller #(
     //
     always @(*) begin
         wb_ready = !wb_lsu_busy_i && !wb_csr_busy_i;
-        ex_ready = wb_ready;
+        ex_ready = wb_ready && !ex_busy_i;
         id_ready = ex_ready && !((fwd_a_ex || fwd_b_ex) && ex_is_mem_or_csr_i);
         if_ready = id_ready && if_ready_i;
     end
@@ -95,9 +97,11 @@ module mirfak_controller #(
         ifid_clear_o = (!if_ready && id_ready) || wb_exception_i || wb_xret_i || id_bj_taken_i;
     end
     //
-    mirfak_decoder #(.UCONTROL(UCONTROL)) decoder (// Outputs
-                                                   .id_control_o     (id_control_o),
-                                                   // Inputs
-                                                   .id_instruction_i (id_instruction_i));
+    mirfak_decoder #(.ENABLE_MULTDIV(ENABLE_MULTDIV),
+                     .UCONTROL(UCONTROL)
+                     ) decoder (// Outputs
+                                .id_control_o     (id_control_o),
+                                // Inputs
+                                .id_instruction_i (id_instruction_i));
     //--------------------------------------------------------------------------
 endmodule
