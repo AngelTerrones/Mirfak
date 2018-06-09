@@ -16,6 +16,7 @@ SHELL=bash
 .UCGEN := hardware/ucontrolgen.py
 .PYTHON:=python3
 .UCONTROL = $(.BFOLDER)/ucontrol.mem
+.MAX_DELAY = 1
 
 # ------------------------------------------------------------------------------
 # targets
@@ -54,7 +55,7 @@ run-mirfak-tests: compile-tests build-mirfak
 	$(eval .RVTESTS:=$(shell find $(.RVTESTSF) -name "rv32ui*.elf" -o -name "rv32um*.elf" -o -name "rv32mi*.elf" ! -name "*breakpoint*.elf"))
 	$(eval .RVBENCHMARKS:=$(shell find $(.RVBENCHMARKSF) -name "*.riscv"))
 	$(eval .RVXTRATESTS:=$(shell find $(.RVXTRATESTSF) -name "*.riscv"))
-	@for delay in {0..3}; do \
+	@for delay in {0..$(.MAX_DELAY)}; do \
 		printf "%b\n" "$(.WARN_COLOR)Testing for MEM_DELAY: $$delay$(.NO_COLOR)"; \
 		for file in $(.RVTESTS) $(.RVBENCHMARKS) $(.RVXTRATESTS); do \
 			$(.MIRFAKCMD) $$file --mem-delay $$delay > /dev/null; \
