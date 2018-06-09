@@ -320,14 +320,14 @@ module mirfak_core #(
     always @(*) begin
         wb_exception = |{wb_ex_exception, csr_exception, lsu_misaligned, lsu_ld_err, lsu_st_err, xcall, xbreak, xint};
         case (1'b1)
-            xint:            begin wb_xcause = xint_xcause;                                                                wb_mtval = wb_pc;          end
+            xint:            begin wb_xcause = xint_xcause;                                                                wb_mtval = 0;              end
             wb_ex_exception: begin wb_xcause = wb_ex_xcause;                                                               wb_mtval = wb_ex_mtval;    end
             lsu_misaligned:  begin wb_xcause = (wb_instruction[5]) ? E_STORE_AMO_ADDR_MISALIGNED : E_LOAD_ADDR_MISALIGNED; wb_mtval = wb_alu_result;  end
             lsu_ld_err:      begin wb_xcause = E_LOAD_ACCESS_FAULT;                                                        wb_mtval = wb_alu_result;  end
             lsu_st_err:      begin wb_xcause = E_STORE_AMO_ACCESS_FAULT;                                                   wb_mtval = wb_alu_result;  end
             csr_exception:   begin wb_xcause = E_ILLEGAL_INST;                                                             wb_mtval = wb_instruction; end
-            xcall:           begin wb_xcause = E_ECALL_FROM_M;                                                             wb_mtval = wb_instruction; end
-            xbreak:          begin wb_xcause = E_BREAKPOINT;                                                               wb_mtval = wb_instruction; end
+            xcall:           begin wb_xcause = E_ECALL_FROM_M;                                                             wb_mtval = 0;              end
+            xbreak:          begin wb_xcause = E_BREAKPOINT;                                                               wb_mtval = wb_pc;          end
             default:         begin wb_xcause = 4'bx;                                                                       wb_mtval = 32'bx;          end
         endcase
     end
