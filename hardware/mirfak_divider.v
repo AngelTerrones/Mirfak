@@ -49,7 +49,7 @@ module mirfak_divider (
             start   <= 0;
             start_q <= 0;
         end else begin
-            start   <= div_enable;
+            start   <= div_enable && !div_ack;
             start_q <= start;
         end
     end
