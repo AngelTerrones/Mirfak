@@ -1,5 +1,5 @@
 /*
- * Algol - A RISC-V (RV32I) Processor Core.
+ * Mirfak - A RISC-V (RV32I) Processor Core.
  *
  * Copyright (C) 2018 Angel Terrones <angelterrones@gmail.com>
  *
@@ -18,7 +18,7 @@
 
 // Test program for external interrupts
 #include <stdio.h>
-#include "algol.h"
+#include "riscv.h"
 
 #define TRIGGER_SI_ADDR 0x20000000u
 #define TRIGGER_TI_ADDR 0x20000004u

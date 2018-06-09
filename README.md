@@ -3,7 +3,7 @@
 Mirfak is a CPU core that implements the [RISC-V RV32I Instruction
 Set](http://riscv.org/).
 
-Algol is free and open hardware licensed under the [MIT
+Mirfak is free and open hardware licensed under the [MIT
 license](https://en.wikipedia.org/wiki/MIT_License).
 
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
