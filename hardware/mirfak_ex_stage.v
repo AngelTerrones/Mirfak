@@ -52,6 +52,7 @@ module mirfak_ex_stage #(parameter [0:0]  ENABLE_MULTDIV = 1
                            output reg [31:0]     ex_fwd_data_o,
                            // pipeline control
                            output reg            ex_busy_o,
+                           input wire            ex_abort_muldiv,
                            input wire            exwb_enable_i,
                            input wire            exwb_clear_i
                            );
@@ -85,7 +86,8 @@ module mirfak_ex_stage #(parameter [0:0]  ENABLE_MULTDIV = 1
                                 .mult_op1       (ex_operand_a_i),
                                 .mult_op2       (ex_operand_b_i),
                                 .mult_cmd       (ex_instruction_i[13:12]),
-                                .mult_enable    (ex_control_i[`CTRL_IS_MULDIV] && !ex_instruction_i[14]));
+                                .mult_enable    (ex_control_i[`CTRL_IS_MULDIV] && !ex_instruction_i[14]),
+                                .mult_abort     (ex_abort_muldiv));
         //
         mirfak_divider div (// Outputs
                             .div_result         (div_result),
@@ -96,12 +98,16 @@ module mirfak_ex_stage #(parameter [0:0]  ENABLE_MULTDIV = 1
                             .div_op1            (ex_operand_a_i),
                             .div_op2            (ex_operand_b_i),
                             .div_cmd            (ex_instruction_i[13:12]),
-                            .div_enable         (ex_control_i[`CTRL_IS_MULDIV] && ex_instruction_i[14]));
+                            .div_enable         (ex_control_i[`CTRL_IS_MULDIV] && ex_instruction_i[14]),
+                            .div_abort          (ex_abort_muldiv));
     end else begin
+        // verilator lint_off UNUSED
+        wire __x__ = ex_abort_muldiv;
+        // verilator lint_on UNUSED
         assign mult_result = 32'bx;
-        assign mult_ack = 0;
-        assign div_result = 32'bx;
-        assign div_ack = 0;
+        assign mult_ack    = 0;
+        assign div_result  = 32'bx;
+        assign div_ack     = 0;
     end endgenerate
     //
     always @(*) begin

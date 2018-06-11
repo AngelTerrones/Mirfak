@@ -29,6 +29,7 @@ module mirfak_divider (
                        input wire [31:0] div_op2,
                        input wire [1:0]  div_cmd,
                        input wire        div_enable,
+                       input wire        div_abort,
                        output reg [31:0] div_result,
                        output reg        div_ack
                        );
@@ -45,7 +46,7 @@ module mirfak_divider (
     assign is_rem  = div_cmd == 2'b10;
     //
     always @(posedge clk_i) begin
-        if (rst_i) begin
+        if (rst_i || div_abort) begin
             start   <= 0;
             start_q <= 0;
         end else begin
@@ -55,7 +56,7 @@ module mirfak_divider (
     end
     //
     always @(posedge clk_i) begin
-        if (rst_i) begin
+        if (rst_i || div_abort) begin
             div_ack <= 0;
             running <= 0;
         end else begin

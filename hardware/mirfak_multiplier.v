@@ -29,6 +29,7 @@ module mirfak_multiplier (
                           input wire [31:0] mult_op2,
                           input wire [1:0]  mult_cmd,
                           input wire        mult_enable,
+                          input wire        mult_abort,
                           output reg [31:0] mult_result,
                           output reg        mult_ack
                           );
@@ -62,7 +63,7 @@ module mirfak_multiplier (
     end
     //
     always @(posedge clk_i) begin
-        if (rst_i || mult_ack) begin
+        if (rst_i || mult_ack || mult_abort) begin
             active   <= 0;
             mult_ack <= 0;
         end else begin

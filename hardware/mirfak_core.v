@@ -220,6 +220,7 @@ module mirfak_core #(
                                .ex_operand_b_i     (ex_operand_b),
                                .ex_lsu_wdata_i     (ex_lsu_wdata),
                                .ex_control_i       (ex_control),
+                               .ex_abort_muldiv    (wb_exception || wb_xret),
                                .exwb_enable_i      (exwb_enable),
                                .exwb_clear_i       (exwb_clear)
                                );
