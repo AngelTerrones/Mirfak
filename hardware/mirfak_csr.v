@@ -23,7 +23,8 @@
 
 module mirfak_csr #(
                     parameter [31:0] HART_ID = 0,
-                    parameter [0:0]  ENABLE_COUNTERS = 1
+                    parameter [0:0]  ENABLE_COUNTERS = 1,
+                    parameter [0:0]  ENABLE_M_ISA = 0
                     )(
                       input wire        clk_i,
                       input wire        rst_i,
@@ -230,9 +231,10 @@ module mirfak_csr #(
         end
     end
     // read registers
+    wire [31:0] misa = {2'b01, 4'b0, (ENABLE_M_ISA) ? 26'h1100 : 26'h100};
     always @(*) begin
         case (1'b1)
-            is_csr_reg[0]:                                  csr_rdata = {2'b01, 4'b0, 26'b00000000000000000100000000};
+            is_csr_reg[0]:                                  csr_rdata = misa;
             is_csr_reg[1]:                                  csr_rdata = HART_ID;
             |{is_csr_reg[2], is_csr_reg[3], is_csr_reg[4]}: csr_rdata = 0;
             is_csr_reg[5]:                                  csr_rdata = mstatus;

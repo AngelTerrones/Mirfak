@@ -126,8 +126,9 @@ parameter CSR_CMD_WRITE = 2'b01;
 parameter CSR_CMD_SET   = 2'b10;
 parameter CSR_CMD_CLEAR = 2'b11;
 // Control fields
-`define CTRL_SZ          30:0
-`define CTRL_INVALID     30:30
+`define CTRL_SZ          31:0
+`define CTRL_INVALID     31:31
+`define CTRL_IS_MULDIV   30:30
 `define CTRL_FENCEI      29:29
 `define CTRL_ECALL_BREAK 28:28
 `define CTRL_RF_WE       27:27

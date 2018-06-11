@@ -22,6 +22,7 @@
 `timescale 1 ns / 1 ps
 
 module mirfak_decoder #(
+                        parameter [0:0]  ENABLE_MULTDIV = 1,
                         parameter UCONTROL = ""
                         )(// verilator lint_off UNUSED
                           input wire [31:0]     id_instruction_i,
@@ -32,7 +33,7 @@ module mirfak_decoder #(
     reg [`CTRL_SZ] ucontrol [0:127];
     reg [6:0]      is_instr;
     reg            is_lui, is_auipc, is_jal, is_jalr, is_branch, is_load;
-    reg            is_store, is_ri, is_rr, is_fence, is_system;
+    reg            is_store, is_ri, is_rr, is_fence, is_system, is_m;
     //
     initial begin
         $readmemb(UCONTROL, ucontrol);
@@ -50,6 +51,7 @@ module mirfak_decoder #(
         is_rr      = id_instruction_i[6:0] == 7'b0110011 && !id_instruction_i[31] && id_instruction_i[29:25] == 5'b00000;
         is_fence   = id_instruction_i[6:0] == 7'b0001111;
         is_system  = id_instruction_i[6:0] == 7'b1110011;
+        is_m       = id_instruction_i[6:0] == 7'b0110011 && id_instruction_i[31:25] == 7'b0000001 && ENABLE_MULTDIV;
         // upper bits: instruction type
         // low bits:   funct3
         case (1'b1)
@@ -64,7 +66,8 @@ module mirfak_decoder #(
             is_rr:     is_instr[6:3]  = 8;  // RR
             is_fence:  is_instr[6:3]  = 9;  // fence
             is_system: is_instr[6:3]  = 10; // system
-            default:   is_instr[6:3]  = 11; // invalid one
+            is_m:      is_instr[6:3]  = 11; // system
+            default:   is_instr[6:3]  = 15; // invalid one
         endcase
         is_instr[2:0] = id_instruction_i[14:12];
         //

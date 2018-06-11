@@ -149,8 +149,8 @@ public:
         }
         // -----------------------------------------------------------------------------
         // Run the CPU model.
-        int SimulateCore(const std::string &progfile, const unsigned long max_time=1000000L) {
-                const std::unique_ptr<WBMEMORY> memory_ptr(new WBMEMORY(MEMSTART, MEMSZ >> 2));
+        int SimulateCore(const std::string &progfile, const unsigned int mem_delay=0, const unsigned long max_time=1000000L) {
+                const std::unique_ptr<WBMEMORY> memory_ptr(new WBMEMORY(MEMSTART, MEMSZ >> 2, mem_delay));
                 WBMEMORY &memory = *memory_ptr;
                 memory.Load(progfile);
                 // Create devices
@@ -205,7 +205,7 @@ void PrintHelp() {
         printf("Mirfak Verilator model.\n");
         printf("Usage:\n");
         printf("\tMirfak.exe --frequency <core frequency> --timeout <max simulation time> --file <filename> "
-               "[--trace] [--trace-directory <trace directory> --trace-name <VCD name>]\n");
+               "--mem-delay <cycles> [--trace] [--trace-directory <trace directory>] [--trace-name <VCD name>]\n");
 }
 
 // -----------------------------------------------------------------------------
@@ -215,17 +215,19 @@ int main(int argc, char **argv) {
         const std::string &s_progfile   = input.GetCmdOption("--file");
         const std::string &s_frequency  = input.GetCmdOption("--frequency");
         const std::string &s_timeout    = input.GetCmdOption("--timeout");
+        const std::string &s_mem_delay  = input.GetCmdOption("--mem-delay");
         const std::string &s_trace_dir  = input.GetCmdOption("--trace-directory");
         const std::string &s_trace_name = input.GetCmdOption("--trace-name");
         const bool trace                = input.CmdOptionExist("--trace");
         const bool help                 = input.CmdOptionExist("--help");
 
-        if (s_progfile.empty() or s_frequency.empty() or s_timeout.empty() or help) {
+        if (s_progfile.empty() or s_frequency.empty() or s_timeout.empty() or s_mem_delay.empty() or help) {
                 PrintHelp();
-                exit(0);
+                exit(-1);
         }
-        const double frequency = std::stod(s_frequency);
-        const uint32_t timeout = std::stoul(s_timeout);
+        const double frequency   = std::stod(s_frequency);
+        const uint32_t timeout   = std::stoul(s_timeout);
+        const uint32_t mem_delay = std::stoul(s_mem_delay);
         std::unique_ptr<MIRFAKTB> tb(new MIRFAKTB(frequency));
         if (trace) {
                 std::string binfile;
@@ -240,5 +242,5 @@ int main(int argc, char **argv) {
                 tb->OpenTrace(vcdfile.data());
         }
         tb->Reset();
-        return tb->SimulateCore(s_progfile, timeout);
+        return tb->SimulateCore(s_progfile, mem_delay, timeout);
 }

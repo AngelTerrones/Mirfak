@@ -155,7 +155,7 @@ module mirfak_if_stage #(
                         iwbm_stb_o    <= 1'b0;
                         instruction_q <= NOP;
                         instr_sel     <= 1'b0;
-                    end else if (if_ready_o) begin
+                    end else if (ifid_enable_i) begin
                         ifu_state     <= ifu_state_fetch;
                         iwbm_cyc_o    <= 1'b1;
                         iwbm_stb_o    <= 1'b1;

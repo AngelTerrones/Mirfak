@@ -3,7 +3,7 @@
 Mirfak is a CPU core that implements the [RISC-V RV32I Instruction
 Set](http://riscv.org/).
 
-Algol is free and open hardware licensed under the [MIT
+Mirfak is free and open hardware licensed under the [MIT
 license](https://en.wikipedia.org/wiki/MIT_License).
 
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
@@ -26,7 +26,7 @@ license](https://en.wikipedia.org/wiki/MIT_License).
 
 ## CPU core details
 
-- RISC-V RV32I ISA.
+- RISC-V RV32IM ISA.
 - Single-issue, in-order, four-stage pipeline datapath.
 - Separate instruction and data ports.
 - No MMU.
@@ -80,6 +80,7 @@ The following parameters can be used to configure the cpu core.
 - **RESET_ADDR (default = 0x80000000)**: The start address of the program.
 - **ENABLE_COUNTERS (default = 1)**: Add support for the `CYCLE[H]` and `INSTRET[H]` counters. If set to zero,
 reading the counters will return zero or a random number.
+- **ENABLE\_M\_ISA (default = 1)**: Enable hardware support for the RV32M ISA.
 - **UCONTROL (default = "ucontrol.list")**: Path to a plain text file with the definition of the control signals, in binary
 format, for each supported instruction.
 
@@ -111,13 +112,14 @@ the project:
 - To execute the C++ model with a single `.elf` file:
 
 > $ Mirfak.exe --frequency [core frequency] --timeout [max simulation time]
-> --file [filename] --trace --trace-directory [trace directory] --trace-name
-> [VCD name]
+> --mem-delay [cycles] --file [filename] --trace --trace-directory [trace
+> directory] --trace-name [VCD name]
 
 #### Parameters of the C++ model
 
 - **frequency**: Frequency for system clock.
 - **timeout**: Maximum simulation time before aborting.
+- **mem-delay**: Number of cycles before assertion of the ACK signal.
 - **file**: RISC-V ELF file to execute.
 - **trace (optional)**: Enable VCD dumps.
 - **trace-directory (optional)**: Folder to store the VCD file. Default is the current

@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 # Copyright (c) 2018 Angel Terrones <angelterrones@gmail.com>
-# Project: V-Algol
+# Project: Mirfak
 # ------------------------------------------------------------------------------
 
 XLEN = 32
@@ -10,7 +10,7 @@ default: riscv
 SWFOLDER = ../../software
 RISCV_PREFIX ?= riscv-none-embed-
 RISCV_GCC ?= $(RISCV_PREFIX)gcc
-RISCV_GCC_OPTS ?= -Wall -mcmodel=medany -static -std=gnu99 -O2 -ffast-math -fno-common  -march=rv32i -mabi=ilp32 -Wl,--no-relax
+RISCV_GCC_OPTS ?= -Wall -mcmodel=medany -static -std=gnu99 -O2 -ffast-math -fno-common  -march=rv32im -mabi=ilp32 -Wl,--no-relax
 RISCV_LINK_OPTS ?= -static -nostartfiles -lm -lgcc -T $(SWFOLDER)/sections.ld
 RISCV_OBJDUMP ?= $(RISCV_PREFIX)objdump --disassemble-all --disassemble-zeroes
 

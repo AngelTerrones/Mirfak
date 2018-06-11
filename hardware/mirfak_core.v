@@ -22,10 +22,11 @@
 `timescale 1 ns / 1 ps
 
 module mirfak_core #(
-                     parameter [31:0] HART_ID = 0,
-                     parameter [31:0] RESET_ADDR = 32'h8000_0000,
+                     parameter [31:0] HART_ID         = 0,
+                     parameter [31:0] RESET_ADDR      = 32'h8000_0000,
                      parameter [0:0]  ENABLE_COUNTERS = 1,
-                     parameter        UCONTROL = "ucontrol.list"
+                     parameter [0:0]  ENABLE_M_ISA    = 1,
+                     parameter        UCONTROL        = "ucontrol.list"
                      )(
                        input wire         clk_i,
                        input wire         rst_i,
@@ -112,6 +113,7 @@ module mirfak_core #(
     wire [31:0]     wb_ex_mtval;
     reg [31:0]      wb_mtval;
     wire            ex_is_mem_or_csr;
+    wire            ex_busy;
     //
     wire            ifid_enable;
     wire            ifid_clear;
@@ -123,36 +125,37 @@ module mirfak_core #(
     assign wb_xret = wb_control[`CTRL_ECALL_BREAK] && wb_instruction[24:20] == 5'b00010;
     assign ex_is_mem_or_csr = ex_control[`CTRL_MEM_EN] || |ex_control[`CTRL_CSR_CMD];
     //
-    mirfak_if_stage ifstage(// Outputs
-                            .id_pc_o            (id_pc),
-                            .id_pc4_o           (id_pc4),
-                            .id_instruction_o   (id_instruction),
-                            .id_if_exception_o  (id_if_exception),
-                            .id_if_xcause_o     (id_if_xcause),
-                            .id_bubble          (id_bubble),
-                            .iwbm_addr_o        (iwbm_addr_o),
-                            .iwbm_dat_o         (iwbm_dat_o),
-                            .iwbm_sel_o         (iwbm_sel_o),
-                            .iwbm_cyc_o         (iwbm_cyc_o),
-                            .iwbm_stb_o         (iwbm_stb_o),
-                            .iwbm_we_o          (iwbm_we_o),
-                            // Inputs
-                            .clk_i              (clk_i),
-                            .rst_i              (rst_i),
-                            .pc_bj_i            (pc_bj),
-                            .pc_except_i        (pc_except),
-                            .pc_xret_i          (pc_xret),
-                            .pc_bj_sel_i        (take_branch),
-                            .pc_except_sel_i    (wb_exception),
-                            .pc_xret_sel_i      (wb_xret), // TODO
-                            .iwbm_dat_i         (iwbm_dat_i),
-                            .iwbm_ack_i         (iwbm_ack_i),
-                            .iwbm_err_i         (iwbm_err_i),
-                            .ifid_enable_i      (ifid_enable),
-                            .if_abort_fetch_i   (wb_exception || take_branch || wb_xret),
-                            .ifid_clear_i       (ifid_clear),
-                            .if_ready_o         (if_ready)
-                            );
+    mirfak_if_stage #(.RESET_ADDR(RESET_ADDR)
+                      )ifstage(// Outputs
+                               .id_pc_o            (id_pc),
+                               .id_pc4_o           (id_pc4),
+                               .id_instruction_o   (id_instruction),
+                               .id_if_exception_o  (id_if_exception),
+                               .id_if_xcause_o     (id_if_xcause),
+                               .id_bubble          (id_bubble),
+                               .iwbm_addr_o        (iwbm_addr_o),
+                               .iwbm_dat_o         (iwbm_dat_o),
+                               .iwbm_sel_o         (iwbm_sel_o),
+                               .iwbm_cyc_o         (iwbm_cyc_o),
+                               .iwbm_stb_o         (iwbm_stb_o),
+                               .iwbm_we_o          (iwbm_we_o),
+                               // Inputs
+                               .clk_i              (clk_i),
+                               .rst_i              (rst_i),
+                               .pc_bj_i            (pc_bj),
+                               .pc_except_i        (pc_except),
+                               .pc_xret_i          (pc_xret),
+                               .pc_bj_sel_i        (take_branch),
+                               .pc_except_sel_i    (wb_exception),
+                               .pc_xret_sel_i      (wb_xret), // TODO
+                               .iwbm_dat_i         (iwbm_dat_i),
+                               .iwbm_ack_i         (iwbm_ack_i),
+                               .iwbm_err_i         (iwbm_err_i),
+                               .ifid_enable_i      (ifid_enable),
+                               .if_abort_fetch_i   (wb_exception || take_branch || wb_xret),
+                               .ifid_clear_i       (ifid_clear),
+                               .if_ready_o         (if_ready)
+                               );
     //
     mirfak_id_stage idstage(// Outputs
                             .ex_pc_o            (ex_pc),
@@ -189,35 +192,38 @@ module mirfak_core #(
                             .idex_clear_i       (idex_clear)
                             );
     //
-    mirfak_ex_stage exstage(// Outputs
-                            .wb_pc_o            (wb_pc),
-                            .wb_pc4_o           (wb_pc4),
-                            .wb_instruction_o   (wb_instruction),
-                            .wb_ex_exception_o  (wb_ex_exception),
-                            .wb_ex_xcause_o     (wb_ex_xcause),
-                            .wb_ex_mtval_o      (wb_ex_mtval),
-                            .wb_bubble_o        (wb_bubble),
-                            .wb_alu_result_o    (wb_alu_result),
-                            .wb_lsu_wdata_o     (wb_lsu_wdata),
-                            .wb_control_o       (wb_control),
-                            .ex_fwd_data_o      (ex_fwd_data),
-                            // Inputs
-                            .clk_i              (clk_i),
-                            .rst_i              (rst_i),
-                            .ex_pc_i            (ex_pc),
-                            .ex_pc4_i           (ex_pc4),
-                            .ex_instruction_i   (ex_instruction),
-                            .ex_exception_i     (ex_exception),
-                            .ex_xcause_i        (ex_xcause),
-                            .ex_mtval_i         (ex_mtval),
-                            .ex_bubble_i        (ex_bubble),
-                            .ex_operand_a_i     (ex_operand_a),
-                            .ex_operand_b_i     (ex_operand_b),
-                            .ex_lsu_wdata_i     (ex_lsu_wdata),
-                            .ex_control_i       (ex_control),
-                            .exwb_enable_i      (exwb_enable),
-                            .exwb_clear_i       (exwb_clear)
-                            );
+    mirfak_ex_stage #(.ENABLE_MULTDIV(ENABLE_M_ISA)
+                      )exstage(// Outputs
+                               .wb_pc_o            (wb_pc),
+                               .wb_pc4_o           (wb_pc4),
+                               .wb_instruction_o   (wb_instruction),
+                               .wb_ex_exception_o  (wb_ex_exception),
+                               .wb_ex_xcause_o     (wb_ex_xcause),
+                               .wb_ex_mtval_o      (wb_ex_mtval),
+                               .wb_bubble_o        (wb_bubble),
+                               .wb_alu_result_o    (wb_alu_result),
+                               .wb_lsu_wdata_o     (wb_lsu_wdata),
+                               .wb_control_o       (wb_control),
+                               .ex_fwd_data_o      (ex_fwd_data),
+                               .ex_busy_o          (ex_busy),
+                               // Inputs
+                               .clk_i              (clk_i),
+                               .rst_i              (rst_i),
+                               .ex_pc_i            (ex_pc),
+                               .ex_pc4_i           (ex_pc4),
+                               .ex_instruction_i   (ex_instruction),
+                               .ex_exception_i     (ex_exception),
+                               .ex_xcause_i        (ex_xcause),
+                               .ex_mtval_i         (ex_mtval),
+                               .ex_bubble_i        (ex_bubble),
+                               .ex_operand_a_i     (ex_operand_a),
+                               .ex_operand_b_i     (ex_operand_b),
+                               .ex_lsu_wdata_i     (ex_lsu_wdata),
+                               .ex_control_i       (ex_control),
+                               .ex_abort_muldiv    (wb_exception || wb_xret),
+                               .exwb_enable_i      (exwb_enable),
+                               .exwb_clear_i       (exwb_clear)
+                               );
     // WB stage
     mirfak_load_store_unit lsu(// Outputs
                                .lsu_rdata_o       (wb_lsu_rdata),
@@ -243,54 +249,60 @@ module mirfak_core #(
                                .dwbm_err_i        (dwbm_err_i)
                                );
     //
-    mirfak_csr csr(// Outputs
-                   .csr_rdata_o         (csr_rdata),
-                   .csr_exception_o     (csr_exception),
-                   .xinterrupt_o        (xinterrupt),
-                   .xint_xcause_o       (xint_xcause),
-                   .pc_except_o         (pc_except),
-                   .pc_xret_o           (pc_xret),
-                   // Inputs
-                   .clk_i               (clk_i),
-                   .rst_i               (rst_i),
-                   .xint_meip_i         (xint_meip_i),
-                   .xint_mtip_i         (xint_mtip_i),
-                   .xint_msip_i         (xint_msip_i),
-                   .csr_addr_i          (wb_instruction[31:20]),
-                   .csr_cmd_i           (wb_control[`CTRL_CSR_CMD]), // TODO
-                   .csr_rs1_zero_i      (wb_instruction[19:15] == 0),
-                   .csr_wdata_i         (csr_wdata),
-                   .wb_exception_i      (wb_exception),
-                   .wb_xret_i           (wb_xret), // TODO
-                   .wb_exception_pc_i   (wb_pc),
-                   .wb_xcause_i         (wb_xcause),
-                   .wb_mtval_i          (wb_mtval),
-                   .wb_bubble_i         (wb_bubble));
+    mirfak_csr #(.HART_ID(HART_ID),
+                 .ENABLE_COUNTERS(ENABLE_COUNTERS),
+                 .ENABLE_M_ISA(ENABLE_M_ISA)
+                 ) csr (// Outputs
+                        .csr_rdata_o         (csr_rdata),
+                        .csr_exception_o     (csr_exception),
+                        .xinterrupt_o        (xinterrupt),
+                        .xint_xcause_o       (xint_xcause),
+                        .pc_except_o         (pc_except),
+                        .pc_xret_o           (pc_xret),
+                        // Inputs
+                        .clk_i               (clk_i),
+                        .rst_i               (rst_i),
+                        .xint_meip_i         (xint_meip_i),
+                        .xint_mtip_i         (xint_mtip_i),
+                        .xint_msip_i         (xint_msip_i),
+                        .csr_addr_i          (wb_instruction[31:20]),
+                        .csr_cmd_i           (wb_control[`CTRL_CSR_CMD]), // TODO
+                        .csr_rs1_zero_i      (wb_instruction[19:15] == 0),
+                        .csr_wdata_i         (csr_wdata),
+                        .wb_exception_i      (wb_exception),
+                        .wb_xret_i           (wb_xret), // TODO
+                        .wb_exception_pc_i   (wb_pc),
+                        .wb_xcause_i         (wb_xcause),
+                        .wb_mtval_i          (wb_mtval),
+                        .wb_bubble_i         (wb_bubble));
     // Control
-    mirfak_controller #(.UCONTROL(UCONTROL)) control(// Outputs
-                                                     .id_control_o     (id_control),
-                                                     .id_fwd_a_sel_o   (id_fwd_a_sel),
-                                                     .id_fwd_b_sel_o   (id_fwd_b_sel),
-                                                     .exwb_enable_o    (exwb_enable),
-                                                     .exwb_clear_o     (exwb_clear),
-                                                     .idex_enable_o    (idex_enable),
-                                                     .idex_clear_o     (idex_clear),
-                                                     .ifid_enable_o    (ifid_enable),
-                                                     .ifid_clear_o     (ifid_clear),
-                                                     // Inputs
-                                                     .id_instruction_i   (id_instruction),
-                                                     .ex_wa_i            (ex_instruction[11:7]),
-                                                     .ex_wen_i           (ex_control[`CTRL_RF_WE]),
-                                                     .ex_is_mem_or_csr_i (ex_is_mem_or_csr),
-                                                     .wb_wa_i            (wb_instruction[11:7]),
-                                                     .wb_wen_i           (wb_control[`CTRL_RF_WE] && !wb_exception),
-                                                     .wb_lsu_busy_i      (lsu_busy),
-                                                     .wb_csr_busy_i      (1'b0), // TODO: remove
-                                                     .if_ready_i         (if_ready),
-                                                     .wb_exception_i     (wb_exception),
-                                                     .wb_xret_i          (wb_xret),
-                                                     .id_bj_taken_i      (take_branch)
-                                                     );
+    mirfak_controller #(.ENABLE_MULTDIV(ENABLE_M_ISA),
+                        .UCONTROL(UCONTROL)
+                        ) control(// Outputs
+                                  .id_control_o     (id_control),
+                                  .id_fwd_a_sel_o   (id_fwd_a_sel),
+                                  .id_fwd_b_sel_o   (id_fwd_b_sel),
+                                  .exwb_enable_o    (exwb_enable),
+                                  .exwb_clear_o     (exwb_clear),
+                                  .idex_enable_o    (idex_enable),
+                                  .idex_clear_o     (idex_clear),
+                                  .ifid_enable_o    (ifid_enable),
+                                  .ifid_clear_o     (ifid_clear),
+                                  // Inputs
+                                  .id_instruction_i   (id_instruction),
+                                  .ex_wa_i            (ex_instruction[11:7]),
+                                  .ex_wen_i           (ex_control[`CTRL_RF_WE]),
+                                  .ex_is_mem_or_csr_i (ex_is_mem_or_csr),
+                                  .wb_wa_i            (wb_instruction[11:7]),
+                                  .wb_wen_i           (wb_control[`CTRL_RF_WE] && !wb_exception),
+                                  .wb_lsu_busy_i      (lsu_busy),
+                                  .wb_csr_busy_i      (1'b0), // TODO: remove
+                                  .ex_busy_i          (ex_busy),
+                                  .if_ready_i         (if_ready),
+                                  .wb_exception_i     (wb_exception),
+                                  .wb_xret_i          (wb_xret),
+                                  .id_bj_taken_i      (take_branch)
+                                  );
     // Handle final exception @ WB stage
     always @(*) begin
         case (wb_control[`CTRL_SEL_WB]) // TODO
@@ -309,14 +321,14 @@ module mirfak_core #(
     always @(*) begin
         wb_exception = |{wb_ex_exception, csr_exception, lsu_misaligned, lsu_ld_err, lsu_st_err, xcall, xbreak, xint};
         case (1'b1)
-            xint:            begin wb_xcause = xint_xcause;                                                                wb_mtval = wb_pc;          end
+            xint:            begin wb_xcause = xint_xcause;                                                                wb_mtval = 0;              end
             wb_ex_exception: begin wb_xcause = wb_ex_xcause;                                                               wb_mtval = wb_ex_mtval;    end
             lsu_misaligned:  begin wb_xcause = (wb_instruction[5]) ? E_STORE_AMO_ADDR_MISALIGNED : E_LOAD_ADDR_MISALIGNED; wb_mtval = wb_alu_result;  end
             lsu_ld_err:      begin wb_xcause = E_LOAD_ACCESS_FAULT;                                                        wb_mtval = wb_alu_result;  end
             lsu_st_err:      begin wb_xcause = E_STORE_AMO_ACCESS_FAULT;                                                   wb_mtval = wb_alu_result;  end
             csr_exception:   begin wb_xcause = E_ILLEGAL_INST;                                                             wb_mtval = wb_instruction; end
-            xcall:           begin wb_xcause = E_ECALL_FROM_M;                                                             wb_mtval = wb_instruction; end
-            xbreak:          begin wb_xcause = E_BREAKPOINT;                                                               wb_mtval = wb_instruction; end
+            xcall:           begin wb_xcause = E_ECALL_FROM_M;                                                             wb_mtval = 0;              end
+            xbreak:          begin wb_xcause = E_BREAKPOINT;                                                               wb_mtval = wb_pc;          end
             default:         begin wb_xcause = 4'bx;                                                                       wb_mtval = 32'bx;          end
         endcase
     end

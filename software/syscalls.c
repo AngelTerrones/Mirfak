@@ -1,5 +1,5 @@
 /*
- * Algol - A RISC-V (RV32I) Processor Core.
+ * Mirfak - A RISC-V (RV32I) Processor Core.
  *
  * Copyright (C) 2018 Angel Terrones <angelterrones@gmail.com>
  *
@@ -22,7 +22,7 @@
 #include <stdint.h>
 #include <errno.h>
 #include <sys/stat.h>
-#include "algol.h"
+#include "riscv.h"
 
 #define MAX_CAUSE 16  // No more than 16 interrupt/exception sources.
 

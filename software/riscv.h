@@ -1,5 +1,5 @@
 /*
- * Algol - A RISC-V (RV32I) Processor Core.
+ * Mirfak - A RISC-V (RV32I) Processor Core.
  *
  * Copyright (C) 2018 Angel Terrones <angelterrones@gmail.com>
  *
@@ -16,10 +16,10 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-// File: algol.h
+// File: riscv.h
 
-#ifndef ALGOL_H
-#define ALGOL_H
+#ifndef RISCV_H
+#define RISCV_H
 
 // -----------------------------------------------------------------------------
 // Constants
