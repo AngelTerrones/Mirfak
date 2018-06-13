@@ -1,6 +1,5 @@
 # ------------------------------------------------------------------------------
 # Copyright (c) 2018 Angel Terrones <angelterrones@gmail.com>
-# Project: Mirfak
 # ------------------------------------------------------------------------------
 include tests/verilator/pprint.mk
 
@@ -16,6 +15,7 @@ UCONTROL    := -GUCONTROL="\"$(UFILE)"\"
 .SUBMAKE := $(MAKE) --no-print-directory --directory=$(.VOBJ) -f
 .VERILATE := verilator --trace -Wall -Wno-fatal -cc -I $(.RTLINC) -y $(.RTLDIR) -CFLAGS "-std=c++11 -O3" -Mdir $(.VOBJ) --prefix VMirfak $(UCONTROL)
 
+#--------------------------------------------------
 # C++ build
 CXX := g++
 CFLAGS := -std=c++17 -Wall -O3 # -g # -DDEBUG # -Wno-sign-compare
@@ -25,18 +25,20 @@ VROOT := $(VERILATOR_ROOT)
 VINCD := $(VROOT)/include
 VINC := -I$(VINCD) -I$(VINCD)/vltstd -I$(.VOBJ)
 
+#--------------------------------------------------
 ifeq ($(OS),Windows_NT)
 	INCS := $(VINC) -Itests/verilator -I /mingw$(shell getconf LONG_BIT)/include/libelf
 else
 	INCS := $(VINC) -Itests/verilator
 endif
 
+#--------------------------------------------------
 GCC7 = $(shell expr `gcc -dumpversion | cut -f1 -d.` = 7 )
-
 ifeq ($(GCC7), 1)
 	CFLAGS += $(CFLAGS_NEW)
 endif
 
+#--------------------------------------------------
 VOBJS := $(.VOBJ)/verilated.o $(.VOBJ)/verilated_vcd_c.o
 SOURCES := mirfak_tb.cpp wbmemory.cpp aelf.cpp wbconsole.cpp wbdevice.cpp
 OBJS := $(addprefix $(.VOBJ)/, $(subst .cpp,.o,$(SOURCES)))

@@ -16,7 +16,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-// File: miarfak_tb.cpp
+// File: mirfak_tb.cpp
 // Testbench for the Mirfak RISC-V CPU core.
 
 #include <iostream>
@@ -48,9 +48,9 @@
 #define dwbm_dat_i  m_core->dwbm_dat_i
 #define dwbm_ack_i  m_core->dwbm_ack_i
 #define dwbm_err_i  m_core->dwbm_err_i
-#define xint_meip  m_core->xint_meip_i
-#define xint_mtip  m_core->xint_mtip_i
-#define xint_msip  m_core->xint_msip_i
+#define xint_meip   m_core->xint_meip_i
+#define xint_mtip   m_core->xint_mtip_i
+#define xint_msip   m_core->xint_msip_i
 
 // Define parameters for RAM
 #define MEMSTART 0x80000000u    // Initial address
