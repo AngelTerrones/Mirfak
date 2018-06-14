@@ -21,6 +21,8 @@
 `default_nettype none
 `timescale 1 ns / 1 ps
 
+`include "mirfak_defines.v"
+
 module mirfak_core #(
                      parameter [31:0] HART_ID         = 0,
                      parameter [31:0] RESET_ADDR      = 32'h8000_0000,
