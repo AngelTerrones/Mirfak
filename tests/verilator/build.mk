@@ -6,14 +6,13 @@ include tests/verilator/pprint.mk
 # verilate
 #--------------------------------------------------
 .RTLDIR		:= hardware
-.RTLINC		:= $(.RTLDIR)/include/mirfak_defines.v
-VSOURCES	:= $(shell find . -name "*.v")
+VSOURCES	:= $(shell find hardware -name "*.v")
 VTOP		:= $(.RTLDIR)/mirfak_core.v
 UCONTROL    := -GUCONTROL="\"$(UFILE)"\"
 #--------------------------------------------------
 .VOBJ := $(BUILD_DIR)/Mirfak_obj
 .SUBMAKE := $(MAKE) --no-print-directory --directory=$(.VOBJ) -f
-.VERILATE := verilator --trace -Wall -Wno-fatal -cc -I $(.RTLINC) -y $(.RTLDIR) -CFLAGS "-std=c++11 -O3" -Mdir $(.VOBJ) --prefix VMirfak $(UCONTROL)
+.VERILATE := verilator --trace -Wall -Wno-fatal -cc -y $(.RTLDIR) -CFLAGS "-std=c++11 -O3" -Mdir $(.VOBJ) --prefix VMirfak $(UCONTROL) -O3 --x-assign 1
 
 #--------------------------------------------------
 # C++ build

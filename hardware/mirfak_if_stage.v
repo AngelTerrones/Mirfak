@@ -43,11 +43,8 @@ module mirfak_if_stage #(
                            output reg        id_bubble,
                            // Instruction port
                            output reg [31:0] iwbm_addr_o,
-                           output reg [31:0] iwbm_dat_o,
-                           output reg [ 3:0] iwbm_sel_o,
                            output reg        iwbm_cyc_o,
                            output reg        iwbm_stb_o,
-                           output reg        iwbm_we_o,
                            input wire [31:0] iwbm_dat_i,
                            input wire        iwbm_ack_i,
                            input wire        iwbm_err_i,
@@ -184,9 +181,6 @@ module mirfak_if_stage #(
 
     always @(*) begin
         iwbm_addr_o  = pc;
-        iwbm_dat_o   = 32'bx;
-        iwbm_sel_o   = 0;
-        iwbm_we_o    = 0;
     end
     //--------------------------------------------------------------------------
 endmodule

@@ -21,6 +21,8 @@
 `default_nettype none
 `timescale 1 ns / 1 ps
 
+`include "mirfak_defines.v"
+
 module mirfak_core #(
                      parameter [31:0] HART_ID         = 0,
                      parameter [31:0] RESET_ADDR      = 32'h8000_0000,
@@ -32,11 +34,8 @@ module mirfak_core #(
                        input wire         rst_i,
                        // wishbone instruction port
                        output wire [31:0] iwbm_addr_o,
-                       output wire [31:0] iwbm_dat_o,
-                       output wire [ 3:0] iwbm_sel_o,
                        output wire        iwbm_cyc_o,
                        output wire        iwbm_stb_o,
-                       output wire        iwbm_we_o,
                        input wire [31:0]  iwbm_dat_i,
                        input wire         iwbm_ack_i,
                        input wire         iwbm_err_i,
@@ -126,128 +125,125 @@ module mirfak_core #(
     assign ex_is_mem_or_csr = ex_control[`CTRL_MEM_EN] || |ex_control[`CTRL_CSR_CMD];
     //
     mirfak_if_stage #(.RESET_ADDR(RESET_ADDR)
-                      )ifstage(// Outputs
-                               .id_pc_o            (id_pc),
-                               .id_pc4_o           (id_pc4),
-                               .id_instruction_o   (id_instruction),
-                               .id_if_exception_o  (id_if_exception),
-                               .id_if_xcause_o     (id_if_xcause),
-                               .id_bubble          (id_bubble),
-                               .iwbm_addr_o        (iwbm_addr_o),
-                               .iwbm_dat_o         (iwbm_dat_o),
-                               .iwbm_sel_o         (iwbm_sel_o),
-                               .iwbm_cyc_o         (iwbm_cyc_o),
-                               .iwbm_stb_o         (iwbm_stb_o),
-                               .iwbm_we_o          (iwbm_we_o),
-                               // Inputs
-                               .clk_i              (clk_i),
-                               .rst_i              (rst_i),
-                               .pc_bj_i            (pc_bj),
-                               .pc_except_i        (pc_except),
-                               .pc_xret_i          (pc_xret),
-                               .pc_bj_sel_i        (take_branch),
-                               .pc_except_sel_i    (wb_exception),
-                               .pc_xret_sel_i      (wb_xret), // TODO
-                               .iwbm_dat_i         (iwbm_dat_i),
-                               .iwbm_ack_i         (iwbm_ack_i),
-                               .iwbm_err_i         (iwbm_err_i),
-                               .ifid_enable_i      (ifid_enable),
-                               .if_abort_fetch_i   (wb_exception || take_branch || wb_xret),
-                               .ifid_clear_i       (ifid_clear),
-                               .if_ready_o         (if_ready)
-                               );
+                      ) ifstage (// Outputs
+                                 .id_pc_o            (id_pc),
+                                 .id_pc4_o           (id_pc4),
+                                 .id_instruction_o   (id_instruction),
+                                 .id_if_exception_o  (id_if_exception),
+                                 .id_if_xcause_o     (id_if_xcause),
+                                 .id_bubble          (id_bubble),
+                                 .iwbm_addr_o        (iwbm_addr_o),
+                                 .iwbm_cyc_o         (iwbm_cyc_o),
+                                 .iwbm_stb_o         (iwbm_stb_o),
+                                 // Inputs
+                                 .clk_i              (clk_i),
+                                 .rst_i              (rst_i),
+                                 .pc_bj_i            (pc_bj),
+                                 .pc_except_i        (pc_except),
+                                 .pc_xret_i          (pc_xret),
+                                 .pc_bj_sel_i        (take_branch),
+                                 .pc_except_sel_i    (wb_exception),
+                                 .pc_xret_sel_i      (wb_xret), // TODO
+                                 .iwbm_dat_i         (iwbm_dat_i),
+                                 .iwbm_ack_i         (iwbm_ack_i),
+                                 .iwbm_err_i         (iwbm_err_i),
+                                 .ifid_enable_i      (ifid_enable),
+                                 .if_abort_fetch_i   (wb_exception || take_branch || wb_xret),
+                                 .ifid_clear_i       (ifid_clear),
+                                 .if_ready_o         (if_ready)
+                                 );
     //
-    mirfak_id_stage idstage(// Outputs
-                            .ex_pc_o            (ex_pc),
-                            .ex_pc4_o           (ex_pc4),
-                            .ex_instruction_o   (ex_instruction),
-                            .ex_exception_o     (ex_exception),
-                            .ex_xcause_o        (ex_xcause),
-                            .ex_mtval_o         (ex_mtval),
-                            .ex_bubble_o        (ex_bubble),
-                            .ex_operand_a_o     (ex_operand_a),
-                            .ex_operand_b_o     (ex_operand_b),
-                            .ex_lsu_wdata_o     (ex_lsu_wdata),
-                            .ex_control_o       (ex_control),
-                            .pc_bj_target_o     (pc_bj),
-                            .take_branch_o      (take_branch),
-                            // Inputs
-                            .clk_i              (clk_i),
-                            .rst_i              (rst_i),
-                            .id_pc_i            (id_pc),
-                            .id_pc4_i           (id_pc4),
-                            .id_instruction_i   (id_instruction),
-                            .id_if_exception_i  (id_if_exception),
-                            .id_if_xcause_i     (id_if_xcause),
-                            .id_bubble          (id_bubble),
-                            .id_control_i       (id_control),
-                            .wb_waddr_i         (wb_instruction[11:7]),
-                            .wb_wdata_i         (wb_wdata),
-                            .wb_wen_i           (wb_control[`CTRL_RF_WE] && !wb_exception), // TODO
-                            .id_fwd_a_sel_i     (id_fwd_a_sel),
-                            .id_fwd_b_sel_i     (id_fwd_b_sel),
-                            .ex_fwd_data_i      (ex_fwd_data),
-                            .wb_fwd_data_i      (wb_wdata),
-                            .idex_enable_i      (idex_enable),
-                            .idex_clear_i       (idex_clear)
-                            );
+    mirfak_id_stage idstage (// Outputs
+                             .ex_pc_o            (ex_pc),
+                             .ex_pc4_o           (ex_pc4),
+                             .ex_instruction_o   (ex_instruction),
+                             .ex_exception_o     (ex_exception),
+                             .ex_xcause_o        (ex_xcause),
+                             .ex_mtval_o         (ex_mtval),
+                             .ex_bubble_o        (ex_bubble),
+                             .ex_operand_a_o     (ex_operand_a),
+                             .ex_operand_b_o     (ex_operand_b),
+                             .ex_lsu_wdata_o     (ex_lsu_wdata),
+                             .ex_control_o       (ex_control),
+                             .pc_bj_target_o     (pc_bj),
+                             .take_branch_o      (take_branch),
+                             // Inputs
+                             .clk_i              (clk_i),
+                             .rst_i              (rst_i),
+                             .id_pc_i            (id_pc),
+                             .id_pc4_i           (id_pc4),
+                             .id_instruction_i   (id_instruction),
+                             .id_if_exception_i  (id_if_exception),
+                             .id_if_xcause_i     (id_if_xcause),
+                             .id_bubble          (id_bubble),
+                             .id_control_i       (id_control),
+                             .wb_waddr_i         (wb_instruction[11:7]),
+                             .wb_wdata_i         (wb_wdata),
+                             .wb_wen_i           (wb_control[`CTRL_RF_WE] && !wb_exception), // TODO
+                             .id_fwd_a_sel_i     (id_fwd_a_sel),
+                             .id_fwd_b_sel_i     (id_fwd_b_sel),
+                             .ex_fwd_data_i      (ex_fwd_data),
+                             .wb_fwd_data_i      (wb_wdata),
+                             .idex_enable_i      (idex_enable),
+                             .idex_clear_i       (idex_clear)
+                             );
     //
     mirfak_ex_stage #(.ENABLE_MULTDIV(ENABLE_M_ISA)
-                      )exstage(// Outputs
-                               .wb_pc_o            (wb_pc),
-                               .wb_pc4_o           (wb_pc4),
-                               .wb_instruction_o   (wb_instruction),
-                               .wb_ex_exception_o  (wb_ex_exception),
-                               .wb_ex_xcause_o     (wb_ex_xcause),
-                               .wb_ex_mtval_o      (wb_ex_mtval),
-                               .wb_bubble_o        (wb_bubble),
-                               .wb_alu_result_o    (wb_alu_result),
-                               .wb_lsu_wdata_o     (wb_lsu_wdata),
-                               .wb_control_o       (wb_control),
-                               .ex_fwd_data_o      (ex_fwd_data),
-                               .ex_busy_o          (ex_busy),
-                               // Inputs
-                               .clk_i              (clk_i),
-                               .rst_i              (rst_i),
-                               .ex_pc_i            (ex_pc),
-                               .ex_pc4_i           (ex_pc4),
-                               .ex_instruction_i   (ex_instruction),
-                               .ex_exception_i     (ex_exception),
-                               .ex_xcause_i        (ex_xcause),
-                               .ex_mtval_i         (ex_mtval),
-                               .ex_bubble_i        (ex_bubble),
-                               .ex_operand_a_i     (ex_operand_a),
-                               .ex_operand_b_i     (ex_operand_b),
-                               .ex_lsu_wdata_i     (ex_lsu_wdata),
-                               .ex_control_i       (ex_control),
-                               .ex_abort_muldiv    (wb_exception || wb_xret),
-                               .exwb_enable_i      (exwb_enable),
-                               .exwb_clear_i       (exwb_clear)
-                               );
+                      ) exstage (// Outputs
+                                 .wb_pc_o            (wb_pc),
+                                 .wb_pc4_o           (wb_pc4),
+                                 .wb_instruction_o   (wb_instruction),
+                                 .wb_ex_exception_o  (wb_ex_exception),
+                                 .wb_ex_xcause_o     (wb_ex_xcause),
+                                 .wb_ex_mtval_o      (wb_ex_mtval),
+                                 .wb_bubble_o        (wb_bubble),
+                                 .wb_alu_result_o    (wb_alu_result),
+                                 .wb_lsu_wdata_o     (wb_lsu_wdata),
+                                 .wb_control_o       (wb_control),
+                                 .ex_fwd_data_o      (ex_fwd_data),
+                                 .ex_busy_o          (ex_busy),
+                                 // Inputs
+                                 .clk_i              (clk_i),
+                                 .rst_i              (rst_i),
+                                 .ex_pc_i            (ex_pc),
+                                 .ex_pc4_i           (ex_pc4),
+                                 .ex_instruction_i   (ex_instruction),
+                                 .ex_exception_i     (ex_exception),
+                                 .ex_xcause_i        (ex_xcause),
+                                 .ex_mtval_i         (ex_mtval),
+                                 .ex_bubble_i        (ex_bubble),
+                                 .ex_operand_a_i     (ex_operand_a),
+                                 .ex_operand_b_i     (ex_operand_b),
+                                 .ex_lsu_wdata_i     (ex_lsu_wdata),
+                                 .ex_control_i       (ex_control),
+                                 .ex_abort_muldiv    (wb_exception || wb_xret),
+                                 .exwb_enable_i      (exwb_enable),
+                                 .exwb_clear_i       (exwb_clear)
+                                 );
     // WB stage
-    mirfak_load_store_unit lsu(// Outputs
-                               .lsu_rdata_o       (wb_lsu_rdata),
-                               .lsu_busy_o        (lsu_busy),
-                               .lsu_misaligned_o  (lsu_misaligned),
-                               .lsu_ld_err_o      (lsu_ld_err),
-                               .lsu_st_err_o      (lsu_st_err),
-                               .dwbm_addr_o       (dwbm_addr_o),
-                               .dwbm_dat_o        (dwbm_dat_o),
-                               .dwbm_sel_o        (dwbm_sel_o),
-                               .dwbm_cyc_o        (dwbm_cyc_o),
-                               .dwbm_stb_o        (dwbm_stb_o),
-                               .dwbm_we_o         (dwbm_we_o),
-                               // Inputs
-                               .lsu_address_i     (wb_alu_result),
-                               .lsu_wdata_i       (wb_lsu_wdata),
-                               .lsu_op_i          (wb_control[`CTRL_MEM_RW]), // TODO
-                               .lsu_en_i          (wb_control[`CTRL_MEM_EN]), // TODO
-                               .lsu_data_type_i   (wb_instruction[13:12]), // TODO: sacar de la instruccion
-                               .lsu_data_sign_ext (!wb_instruction[14]), // TODO
-                               .dwbm_dat_i        (dwbm_dat_i),
-                               .dwbm_ack_i        (dwbm_ack_i),
-                               .dwbm_err_i        (dwbm_err_i)
-                               );
+    mirfak_load_store_unit lsu (// Outputs
+                                .lsu_rdata_o       (wb_lsu_rdata),
+                                .lsu_busy_o        (lsu_busy),
+                                .lsu_misaligned_o  (lsu_misaligned),
+                                .lsu_ld_err_o      (lsu_ld_err),
+                                .lsu_st_err_o      (lsu_st_err),
+                                .dwbm_addr_o       (dwbm_addr_o),
+                                .dwbm_dat_o        (dwbm_dat_o),
+                                .dwbm_sel_o        (dwbm_sel_o),
+                                .dwbm_cyc_o        (dwbm_cyc_o),
+                                .dwbm_stb_o        (dwbm_stb_o),
+                                .dwbm_we_o         (dwbm_we_o),
+                                // Inputs
+                                .lsu_address_i     (wb_alu_result),
+                                .lsu_wdata_i       (wb_lsu_wdata),
+                                .lsu_op_i          (wb_control[`CTRL_MEM_RW]), // TODO
+                                .lsu_en_i          (wb_control[`CTRL_MEM_EN]), // TODO
+                                .lsu_data_type_i   (wb_instruction[13:12]), // TODO: sacar de la instruccion
+                                .lsu_data_sign_ext (!wb_instruction[14]), // TODO
+                                .dwbm_dat_i        (dwbm_dat_i),
+                                .dwbm_ack_i        (dwbm_ack_i),
+                                .dwbm_err_i        (dwbm_err_i)
+                                );
     //
     mirfak_csr #(.HART_ID(HART_ID),
                  .ENABLE_COUNTERS(ENABLE_COUNTERS),
@@ -278,31 +274,31 @@ module mirfak_core #(
     // Control
     mirfak_controller #(.ENABLE_MULTDIV(ENABLE_M_ISA),
                         .UCONTROL(UCONTROL)
-                        ) control(// Outputs
-                                  .id_control_o     (id_control),
-                                  .id_fwd_a_sel_o   (id_fwd_a_sel),
-                                  .id_fwd_b_sel_o   (id_fwd_b_sel),
-                                  .exwb_enable_o    (exwb_enable),
-                                  .exwb_clear_o     (exwb_clear),
-                                  .idex_enable_o    (idex_enable),
-                                  .idex_clear_o     (idex_clear),
-                                  .ifid_enable_o    (ifid_enable),
-                                  .ifid_clear_o     (ifid_clear),
-                                  // Inputs
-                                  .id_instruction_i   (id_instruction),
-                                  .ex_wa_i            (ex_instruction[11:7]),
-                                  .ex_wen_i           (ex_control[`CTRL_RF_WE]),
-                                  .ex_is_mem_or_csr_i (ex_is_mem_or_csr),
-                                  .wb_wa_i            (wb_instruction[11:7]),
-                                  .wb_wen_i           (wb_control[`CTRL_RF_WE] && !wb_exception),
-                                  .wb_lsu_busy_i      (lsu_busy),
-                                  .wb_csr_busy_i      (1'b0), // TODO: remove
-                                  .ex_busy_i          (ex_busy),
-                                  .if_ready_i         (if_ready),
-                                  .wb_exception_i     (wb_exception),
-                                  .wb_xret_i          (wb_xret),
-                                  .id_bj_taken_i      (take_branch)
-                                  );
+                        ) control (// Outputs
+                                   .id_control_o     (id_control),
+                                   .id_fwd_a_sel_o   (id_fwd_a_sel),
+                                   .id_fwd_b_sel_o   (id_fwd_b_sel),
+                                   .exwb_enable_o    (exwb_enable),
+                                   .exwb_clear_o     (exwb_clear),
+                                   .idex_enable_o    (idex_enable),
+                                   .idex_clear_o     (idex_clear),
+                                   .ifid_enable_o    (ifid_enable),
+                                   .ifid_clear_o     (ifid_clear),
+                                   // Inputs
+                                   .id_instruction_i   (id_instruction),
+                                   .ex_wa_i            (ex_instruction[11:7]),
+                                   .ex_wen_i           (ex_control[`CTRL_RF_WE]),
+                                   .ex_is_mem_or_csr_i (ex_is_mem_or_csr),
+                                   .wb_wa_i            (wb_instruction[11:7]),
+                                   .wb_wen_i           (wb_control[`CTRL_RF_WE] && !wb_exception),
+                                   .wb_lsu_busy_i      (lsu_busy),
+                                   .wb_csr_busy_i      (1'b0), // TODO: remove
+                                   .ex_busy_i          (ex_busy),
+                                   .if_ready_i         (if_ready),
+                                   .wb_exception_i     (wb_exception),
+                                   .wb_xret_i          (wb_xret),
+                                   .id_bj_taken_i      (take_branch)
+                                   );
     // Handle final exception @ WB stage
     always @(*) begin
         case (wb_control[`CTRL_SEL_WB]) // TODO

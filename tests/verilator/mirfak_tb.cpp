@@ -31,11 +31,8 @@
 
 // Use short names for the core signals
 #define iwbm_addr_o m_core->iwbm_addr_o
-#define iwbm_dat_o  m_core->iwbm_dat_o
-#define iwbm_sel_o  m_core->iwbm_sel_o
 #define iwbm_cyc_o  m_core->iwbm_cyc_o
 #define iwbm_stb_o  m_core->iwbm_stb_o
-#define iwbm_we_o   m_core->iwbm_we_o
 #define iwbm_dat_i  m_core->iwbm_dat_i
 #define iwbm_ack_i  m_core->iwbm_ack_i
 #define iwbm_err_i  m_core->iwbm_err_i
@@ -187,7 +184,7 @@ public:
                                        dwbm_dat_i, dwbm_ack_i, dwbm_err_i,
                                        xint_meip, xint_mtip, xint_msip);
                         } else {
-                                memory(iwbm_addr_o, iwbm_dat_o, iwbm_sel_o, iwbm_cyc_o, iwbm_stb_o, iwbm_we_o,
+                                memory(iwbm_addr_o, 0, 0, iwbm_cyc_o, iwbm_stb_o, 0,
                                        iwbm_dat_i, iwbm_ack_i, iwbm_err_i);
                                 ip_bus = iwbm_cyc_o && !(iwbm_ack_i || iwbm_err_i);
                         }
