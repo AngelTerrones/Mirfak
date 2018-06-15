@@ -34,11 +34,8 @@ module mirfak_core #(
                        input wire         rst_i,
                        // wishbone instruction port
                        output wire [31:0] iwbm_addr_o,
-                       output wire [31:0] iwbm_dat_o,
-                       output wire [ 3:0] iwbm_sel_o,
                        output wire        iwbm_cyc_o,
                        output wire        iwbm_stb_o,
-                       output wire        iwbm_we_o,
                        input wire [31:0]  iwbm_dat_i,
                        input wire         iwbm_ack_i,
                        input wire         iwbm_err_i,
@@ -136,11 +133,8 @@ module mirfak_core #(
                                  .id_if_xcause_o     (id_if_xcause),
                                  .id_bubble          (id_bubble),
                                  .iwbm_addr_o        (iwbm_addr_o),
-                                 .iwbm_dat_o         (iwbm_dat_o),
-                                 .iwbm_sel_o         (iwbm_sel_o),
                                  .iwbm_cyc_o         (iwbm_cyc_o),
                                  .iwbm_stb_o         (iwbm_stb_o),
-                                 .iwbm_we_o          (iwbm_we_o),
                                  // Inputs
                                  .clk_i              (clk_i),
                                  .rst_i              (rst_i),
