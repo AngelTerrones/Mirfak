@@ -6,7 +6,7 @@ include tests/verilator/pprint.mk
 # verilate
 #--------------------------------------------------
 .RTLDIR		:= hardware
-VSOURCES	:= $(shell find . -name "*.v")
+VSOURCES	:= $(shell find hardware -name "*.v")
 VTOP		:= $(.RTLDIR)/mirfak_core.v
 UCONTROL    := -GUCONTROL="\"$(UFILE)"\"
 #--------------------------------------------------
