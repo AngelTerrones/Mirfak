@@ -40,6 +40,7 @@ module mirfak_controller #(
                              input wire             wb_lsu_busy_i,
                              input wire             wb_csr_busy_i,
                              input wire             ex_busy_i,
+                             input wire             id_busy_i,
                              input wire             if_ready_i,
                              // kill sources
                              input wire             wb_exception_i,
@@ -84,7 +85,7 @@ module mirfak_controller #(
     always @(*) begin
         wb_ready = !wb_lsu_busy_i && !wb_csr_busy_i;
         ex_ready = wb_ready && !ex_busy_i;
-        id_ready = ex_ready && !((fwd_a_ex || fwd_b_ex) && ex_is_mem_or_csr_i);
+        id_ready = ex_ready && !id_busy_i && !((fwd_a_ex || fwd_b_ex) && ex_is_mem_or_csr_i);
         if_ready = id_ready && if_ready_i;
     end
     always @(*) begin
