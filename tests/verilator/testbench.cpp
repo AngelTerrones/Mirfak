@@ -24,8 +24,7 @@
 #include <algorithm>
 #include <verilated.h>
 #include "Vtop.h"
-#include "Vtop_top.h"
-#include "Vtop_ram__A18.h"
+#include "Vtop__Syms.h"
 #include "aelf.h"
 #include "testbench.h"
 // -----------------------------------------------------------------------------

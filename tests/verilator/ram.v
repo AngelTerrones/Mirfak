@@ -22,7 +22,8 @@
 `timescale 1 ns / 1 ps
 
 module ram #(
-             parameter ADDR_WIDTH = 22
+             parameter ADDR_WIDTH = 22,
+             parameter BASE_ADDR  = 32'h0000_0000
              )(
                // Instruction
                // verilator lint_off UNUSED
@@ -47,22 +48,31 @@ module ram #(
     //--------------------------------------------------------------------------
     localparam BYTES = 2**ADDR_WIDTH;
     //
-    reg [7:0] mem[0:BYTES] /* verilator public */;
-    wire [ADDR_WIDTH - 1:0] i_addr, d_addr;
+    reg [7:0]               mem[0:BYTES - 1] /*verilator public*/;
+    wire [ADDR_WIDTH - 1:0] i_addr;
+    wire [ADDR_WIDTH - 1:0] d_addr;
+    wire                    i_access;
+    wire                    d_access;
     // read instructions
-    assign i_addr = {iwbs_addr_i[ADDR_WIDTH-1:2], 2'b0};
+    assign i_addr   = {iwbs_addr_i[ADDR_WIDTH - 1:2], 2'b0};
+    assign i_access = iwbs_addr_i[31:ADDR_WIDTH] == BASE_ADDR[31:ADDR_WIDTH];
     always @(*) begin
-        iwbs_dat_o[7:0]    = mem[i_addr + 0];
-        iwbs_dat_o[15:8]   = mem[i_addr + 1];
-        iwbs_dat_o[23:16]  = mem[i_addr + 2];
-        iwbs_dat_o[31:24]  = mem[i_addr + 3];
+        iwbs_dat_o = 32'hx;
+        if (i_access) begin
+            iwbs_dat_o[7:0]    = mem[i_addr + 0];
+            iwbs_dat_o[15:8]   = mem[i_addr + 1];
+            iwbs_dat_o[23:16]  = mem[i_addr + 2];
+            iwbs_dat_o[31:24]  = mem[i_addr + 3];
+        end
         //
-        iwbs_ack_o = iwbs_cyc_i && iwbs_stb_i;
+        iwbs_ack_o = iwbs_cyc_i && iwbs_stb_i && i_access;
     end
     // read/write data
-    assign d_addr = {dwbs_addr_i[ADDR_WIDTH-1:2], 2'b0};
+    assign d_addr   = {dwbs_addr_i[ADDR_WIDTH - 1:2], 2'b0};
+    assign d_access = dwbs_addr_i[31:ADDR_WIDTH] == BASE_ADDR[31:ADDR_WIDTH];
     always @(*) begin
-        if (dwbs_we_i) begin
+        dwbs_dat_o = 32'hx;
+        if (dwbs_we_i && d_access) begin
             if (dwbs_sel_i[0]) mem[d_addr + 0] = dwbs_dat_i[0+:8];
             if (dwbs_sel_i[1]) mem[d_addr + 1] = dwbs_dat_i[8+:8];
             if (dwbs_sel_i[2]) mem[d_addr + 2] = dwbs_dat_i[16+:8];
@@ -74,7 +84,7 @@ module ram #(
             dwbs_dat_o[31:24]  = mem[d_addr + 3];
         end
         //
-        dwbs_ack_o = dwbs_cyc_i && dwbs_stb_i;
+        dwbs_ack_o = dwbs_cyc_i && dwbs_stb_i && d_access;
     end
     //--------------------------------------------------------------------------
 endmodule

@@ -82,7 +82,8 @@ module top #(
     //
     ram #(/*AUTOINSTPARAM*/
           // Parameters
-          .ADDR_WIDTH(24)
+          .ADDR_WIDTH(24),
+          .BASE_ADDR(32'h8000_0000)
           ) memory (/*AUTOINST*/
                     // Outputs
                     .iwbs_dat_o      (iwbm_dat),
