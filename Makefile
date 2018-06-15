@@ -18,7 +18,6 @@ SHELL=bash
 .UCGEN			= hardware/ucontrolgen.py
 .PYTHON			= python3
 .UCONTROL		= $(.BFOLDER)/ucontrol.mem
-.MAX_DELAY		= 1
 
 # ------------------------------------------------------------------------------
 # targets
@@ -56,17 +55,14 @@ build-model: verilate
 run-tests: compile-tests build-model
 	$(eval .RVTESTS:=$(shell find $(.RVTESTSF) -name "rv32ui*.elf" -o -name "rv32um*.elf" -o -name "rv32mi*.elf" ! -name "*breakpoint*.elf"))
 	$(eval .RVBENCHMARKS:=$(shell find $(.RVBENCHMARKSF) -name "*.riscv"))
-	$(eval .RVXTRATESTS:=$(shell find $(.RVXTRATESTSF) -name "*.riscv"))
-	@for delay in {0..$(.MAX_DELAY)}; do													\
-		printf "%b\n" "$(.WARN_COLOR)Testing for MEM_DELAY: $$delay$(.NO_COLOR)";			\
-		for file in $(.RVTESTS) $(.RVBENCHMARKS) $(.RVXTRATESTS); do						\
-			$(.TBEXE) $$file --mem-delay $$delay > /dev/null;								\
-			if [ $$? -eq 0 ]; then															\
-				printf "%-50b %b\n" $$file "$(.OK_COLOR)$(.OK_STRING)$(.NO_COLOR)";			\
-			else																			\
-				printf "%-50s %b" $$file "$(.ERROR_COLOR)$(.ERROR_STRING)$(.NO_COLOR)\n";	\
-			fi;																				\
-		done;																				\
+
+	@for file in $(.RVTESTS) $(.RVBENCHMARKS) $(.RVXTRATESTS); do						\
+		$(.TBEXE) $$file --mem-delay $$delay > /dev/null;								\
+		if [ $$? -eq 0 ]; then															\
+			printf "%-50b %b\n" $$file "$(.OK_COLOR)$(.OK_STRING)$(.NO_COLOR)";			\
+		else																			\
+			printf "%-50s %b" $$file "$(.ERROR_COLOR)$(.ERROR_STRING)$(.NO_COLOR)\n";	\
+		fi;																				\
 	done
 # ------------------------------------------------------------------------------
 # clean
