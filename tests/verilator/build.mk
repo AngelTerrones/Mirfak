@@ -47,13 +47,13 @@ OBJS	:= $(addprefix $(.VOBJ)/, $(subst .cpp,.o,$(SOURCES)))
 # targets
 # ------------------------------------------------------------------------------
 build-vlib: $(.VOBJ)/Vtop__ALL.a
-build-core: $(BUILD_DIR)/Mirfak.exe
+build-core: $(BUILD_DIR)/$(EXE).exe
 
 .SECONDARY: $(OBJS)
 
 # Verilator
 $(.VOBJ)/Vtop__ALL.a: $(VSOURCES)
-	@printf "%b" "$(.COM_COLOR)$(.VER_STRING)$(.OBJ_COLOR) $<$(.NO_COLOR)\n"
+	@printf "%b" "$(.COM_COLOR)$(.VER_STRING)$(.OBJ_COLOR) $(VTOP) $(.NO_COLOR)\n"
 	+@$(.VERILATE) $(VTOP)
 	@printf "%b" "$(.COM_COLOR)$(.COM_STRING)$(.OBJ_COLOR) $(@F)$(.NO_COLOR)\n"
 	+@$(.SUBMAKE) Vtop.mk
@@ -61,13 +61,13 @@ $(.VOBJ)/Vtop__ALL.a: $(VSOURCES)
 # C++
 $(.VOBJ)/%.o: tests/verilator/%.cpp
 	@printf "%b" "$(.COM_COLOR)$(.COM_STRING)$(.OBJ_COLOR) $(@F) $(.NO_COLOR)\n"
-	@$(CXX) $(CFLAGS) $(INCS) -c $< -o $@
+	@$(CXX) $(CFLAGS) -DEXE="\"$(EXE)\"" $(INCS) -c $< -o $@
 
 $(VOBJS): $(.VOBJ)/%.o: $(VINCD)/%.cpp
 	@printf "%b" "$(.COM_COLOR)$(.COM_STRING)$(.OBJ_COLOR) $(@F) $(.NO_COLOR)\n"
 	@$(CXX) $(CFLAGS) $(INCS) -Wno-format -c $< -o $@
 
-$(BUILD_DIR)/Mirfak.exe: $(VOBJS) $(OBJS) $(.VOBJ)/Vtop__ALL.a
+$(BUILD_DIR)/$(EXE).exe: $(VOBJS) $(OBJS) $(.VOBJ)/Vtop__ALL.a
 	@printf "%b" "$(.COM_COLOR)$(.COM_STRING)$(.OBJ_COLOR) $(@F)$(.NO_COLOR)\n"
 	@$(CXX) $(INCS) $^ -lelf -o $@
 	@printf "%b" "$(.MSJ_COLOR)Compilation $(.OK_COLOR)$(.OK_STRING)$(.NO_COLOR)\n"

@@ -48,7 +48,7 @@ verilate: $(.UCONTROL)
 	+@$(.SUBMAKE) -f $(.MKTB) build-vlib BUILD_DIR=$(.BFOLDER) UFILE=$(.UCONTROL)
 
 build-model: verilate
-	+@$(.SUBMAKE) -f $(.MKTB) build-core BUILD_DIR=$(.BFOLDER)
+	+@$(.SUBMAKE) -f $(.MKTB) build-core BUILD_DIR=$(.BFOLDER) EXE=$(.PROJECTNAME)
 
 # ------------------------------------------------------------------------------
 # verilator tests

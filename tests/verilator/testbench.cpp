@@ -171,9 +171,9 @@ private:
 // -----------------------------------------------------------------------------
 // Basic help
 void PrintHelp() {
-        printf("Mirfak Verilator model.\n");
+        printf("RISC-V CPU Verilator model.\n");
         printf("Usage:\n");
-        printf("TODO\n");
+        printf("\t" EXE ".exe --file <ELF file> --timeout <max simulation time> [--trace] [--help]\n");
 }
 
 // -----------------------------------------------------------------------------
