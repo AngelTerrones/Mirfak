@@ -12,7 +12,6 @@ SHELL=bash
 .BFOLDER		= build
 .RVTESTSF		= tests/riscv-tests
 .RVBENCHMARKSF	= tests/benchmarks
-.RVXTRATESTSF	= tests/extra-tests
 .MKTB			= tests/verilator/build.mk
 .TBEXE			= $(.BFOLDER)/$(.PROJECTNAME).exe --frequency 100e6 --timeout 50000000 --file
 .UCGEN			= hardware/ucontrolgen.py
@@ -34,7 +33,6 @@ help:
 compile-tests:
 	+@$(.SUBMAKE) -C $(.RVTESTSF)
 	+@$(.SUBMAKE) -C $(.RVBENCHMARKSF)
-	+@$(.SUBMAKE) -C $(.RVXTRATESTSF)
 
 # ------------------------------------------------------------------------------
 # verilate and build
@@ -74,6 +72,5 @@ distclean: clean
 	@find . | grep -E "(__pycache__|\.pyc|\.pyo|\.cache)" | xargs rm -rf
 	@$(.SUBMAKE) -C $(.RVTESTSF) clean
 	@$(.SUBMAKE) -C $(.RVBENCHMARKSF) clean
-	@$(.SUBMAKE) -C $(.RVXTRATESTSF) clean
 
 .PHONY: compile-tests compile-benchmarks run-tests run-benchmarks clean distclean
