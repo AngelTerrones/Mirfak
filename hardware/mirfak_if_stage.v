@@ -52,6 +52,7 @@ module mirfak_if_stage #(
                            input wire        ifid_enable_i,
                            input wire        ifid_clear_i,
                            input wire        if_abort_fetch_i,
+                           input wire        if_restart_i,
                            output reg        if_ready_o
                            );
     //--------------------------------------------------------------------------
@@ -81,6 +82,7 @@ module mirfak_if_stage #(
     always @(posedge clk_i) begin
         if (rst_i) begin
             pc <= RESET_ADDR;
+        end else if (if_restart_i) begin
         end else if (ifid_enable_i || if_abort_fetch_i) begin
             pc <= npc;
         end
@@ -131,7 +133,7 @@ module mirfak_if_stage #(
                     iwbm_stb_o <= 1'b1;
                 end
                 ifu_state_fetch: begin
-                    if (if_abort_fetch_i) begin
+                    if (if_abort_fetch_i || if_restart_i) begin
                         ifu_state     <= ifu_state_kill;
                         iwbm_cyc_o    <= 1'b0;
                         iwbm_stb_o    <= 1'b0;
@@ -161,7 +163,7 @@ module mirfak_if_stage #(
                     end
                 end
                 ifu_state_kill : begin
-                    if (!if_abort_fetch_i) begin
+                    if (!if_abort_fetch_i && !if_restart_i) begin
                         ifu_state     <= ifu_state_fetch;
                         iwbm_cyc_o    <= 1'b1;
                         iwbm_stb_o    <= 1'b1;

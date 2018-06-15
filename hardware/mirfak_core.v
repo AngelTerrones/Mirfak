@@ -113,6 +113,7 @@ module mirfak_core #(
     reg [31:0]      wb_mtval;
     wire            ex_is_mem_or_csr;
     wire            ex_busy;
+    wire            id_busy;
     //
     wire            ifid_enable;
     wire            ifid_clear;
@@ -149,6 +150,7 @@ module mirfak_core #(
                                  .iwbm_err_i         (iwbm_err_i),
                                  .ifid_enable_i      (ifid_enable),
                                  .if_abort_fetch_i   (wb_exception || take_branch || wb_xret),
+                                 .if_restart_i       (id_busy),
                                  .ifid_clear_i       (ifid_clear),
                                  .if_ready_o         (if_ready)
                                  );
@@ -294,6 +296,7 @@ module mirfak_core #(
                                    .wb_lsu_busy_i      (lsu_busy),
                                    .wb_csr_busy_i      (1'b0), // TODO: remove
                                    .ex_busy_i          (ex_busy),
+                                   .id_busy_i          (id_busy),
                                    .if_ready_i         (if_ready),
                                    .wb_exception_i     (wb_exception),
                                    .wb_xret_i          (wb_xret),
@@ -311,9 +314,11 @@ module mirfak_core #(
         csr_wdata = (wb_instruction[14]) ? {27'b0, wb_instruction[19:15]}: wb_alu_result;
     end
     //
-    assign xint   = xinterrupt && !wb_bubble;
-    assign xcall  = wb_control[`CTRL_ECALL_BREAK] && wb_instruction[31:20] == 12'b000000000000;
-    assign xbreak = wb_control[`CTRL_ECALL_BREAK] && wb_instruction[31:20] == 12'b000000000001;
+    assign id_busy = id_control[`CTRL_FENCEI] && ((ex_control[`CTRL_MEM_EN] && ex_control[`CTRL_MEM_RW]) ||
+                                                  (wb_control[`CTRL_MEM_EN] && wb_control[`CTRL_MEM_RW]));
+    assign xint    = xinterrupt && !wb_bubble;
+    assign xcall   = wb_control[`CTRL_ECALL_BREAK] && wb_instruction[31:20] == 12'b000000000000;
+    assign xbreak  = wb_control[`CTRL_ECALL_BREAK] && wb_instruction[31:20] == 12'b000000000001;
     always @(*) begin
         wb_exception = |{wb_ex_exception, csr_exception, lsu_misaligned, lsu_ld_err, lsu_st_err, xcall, xbreak, xint};
         case (1'b1)

@@ -12,13 +12,11 @@ SHELL=bash
 .BFOLDER		= build
 .RVTESTSF		= tests/riscv-tests
 .RVBENCHMARKSF	= tests/benchmarks
-.RVXTRATESTSF	= tests/extra-tests
 .MKTB			= tests/verilator/build.mk
-.TBEXE			= $(.BFOLDER)/$(.PROJECTNAME).exe --frequency 100e6 --timeout 50000000 --file
+.TBEXE			= $(.BFOLDER)/$(.PROJECTNAME).exe --timeout 50000000 --file
 .UCGEN			= hardware/ucontrolgen.py
 .PYTHON			= python3
 .UCONTROL		= $(.BFOLDER)/ucontrol.mem
-.MAX_DELAY		= 1
 
 # ------------------------------------------------------------------------------
 # targets
@@ -35,7 +33,6 @@ help:
 compile-tests:
 	+@$(.SUBMAKE) -C $(.RVTESTSF)
 	+@$(.SUBMAKE) -C $(.RVBENCHMARKSF)
-	+@$(.SUBMAKE) -C $(.RVXTRATESTSF)
 
 # ------------------------------------------------------------------------------
 # verilate and build
@@ -49,24 +46,21 @@ verilate: $(.UCONTROL)
 	+@$(.SUBMAKE) -f $(.MKTB) build-vlib BUILD_DIR=$(.BFOLDER) UFILE=$(.UCONTROL)
 
 build-model: verilate
-	+@$(.SUBMAKE) -f $(.MKTB) build-core BUILD_DIR=$(.BFOLDER)
+	+@$(.SUBMAKE) -f $(.MKTB) build-core BUILD_DIR=$(.BFOLDER) EXE=$(.PROJECTNAME)
 
 # ------------------------------------------------------------------------------
 # verilator tests
 run-tests: compile-tests build-model
 	$(eval .RVTESTS:=$(shell find $(.RVTESTSF) -name "rv32ui*.elf" -o -name "rv32um*.elf" -o -name "rv32mi*.elf" ! -name "*breakpoint*.elf"))
 	$(eval .RVBENCHMARKS:=$(shell find $(.RVBENCHMARKSF) -name "*.riscv"))
-	$(eval .RVXTRATESTS:=$(shell find $(.RVXTRATESTSF) -name "*.riscv"))
-	@for delay in {0..$(.MAX_DELAY)}; do													\
-		printf "%b\n" "$(.WARN_COLOR)Testing for MEM_DELAY: $$delay$(.NO_COLOR)";			\
-		for file in $(.RVTESTS) $(.RVBENCHMARKS) $(.RVXTRATESTS); do						\
-			$(.TBEXE) $$file --mem-delay $$delay > /dev/null;								\
-			if [ $$? -eq 0 ]; then															\
-				printf "%-50b %b\n" $$file "$(.OK_COLOR)$(.OK_STRING)$(.NO_COLOR)";			\
-			else																			\
-				printf "%-50s %b" $$file "$(.ERROR_COLOR)$(.ERROR_STRING)$(.NO_COLOR)\n";	\
-			fi;																				\
-		done;																				\
+
+	@for file in $(.RVTESTS) $(.RVBENCHMARKS) $(.RVXTRATESTS); do						\
+		$(.TBEXE) $$file --mem-delay $$delay > /dev/null;								\
+		if [ $$? -eq 0 ]; then															\
+			printf "%-50b %b\n" $$file "$(.OK_COLOR)$(.OK_STRING)$(.NO_COLOR)";			\
+		else																			\
+			printf "%-50s %b" $$file "$(.ERROR_COLOR)$(.ERROR_STRING)$(.NO_COLOR)\n";	\
+		fi;																				\
 	done
 # ------------------------------------------------------------------------------
 # clean
@@ -78,6 +72,5 @@ distclean: clean
 	@find . | grep -E "(__pycache__|\.pyc|\.pyo|\.cache)" | xargs rm -rf
 	@$(.SUBMAKE) -C $(.RVTESTSF) clean
 	@$(.SUBMAKE) -C $(.RVBENCHMARKSF) clean
-	@$(.SUBMAKE) -C $(.RVXTRATESTSF) clean
 
 .PHONY: compile-tests compile-benchmarks run-tests run-benchmarks clean distclean
