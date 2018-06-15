@@ -53,12 +53,10 @@ license](https://en.wikipedia.org/wiki/MIT_License).
 - `README.md`: This file.
 - `hardware`: CPU source files written in Verilog.
 - `documentation`: LaTeX source files for the CPU manual (TODO).
-- `software`: Support libraries for the CPU, in C.
 - `tests`: Test environment for the CPU.
     - `benchmarks`: Basic benchmarks written in C. Taken from
       [riscv-tests](http://riscv.org/software-tools/riscv-tests/) (git rev
       b747a10).
-    - `extra-tests`: Tests for the support libraries, and external interrupts.
     - `riscv-tests`: Basic instruction-level tests. Taken from
       [riscv-tests](http://riscv.org/software-tools/riscv-tests/) (git rev
       b747a10).
@@ -107,25 +105,17 @@ the project:
 
 - To execute all the tests, without VCD dumps:
 
-> $ make run-mirfak-tests
+> $ make run-tests
 
 - To execute the C++ model with a single `.elf` file:
 
-> $ Mirfak.exe --frequency [core frequency] --timeout [max simulation time]
-> --mem-delay [cycles] --file [filename] --trace --trace-directory [trace
-> directory] --trace-name [VCD name]
+> $ Mirfak.exe --file [ELF file] --timeout [max simulation time] --trace
 
 #### Parameters of the C++ model
 
-- **frequency**: Frequency for system clock.
-- **timeout**: Maximum simulation time before aborting.
-- **mem-delay**: Number of cycles before assertion of the ACK signal.
 - **file**: RISC-V ELF file to execute.
-- **trace (optional)**: Enable VCD dumps.
-- **trace-directory (optional)**: Folder to store the VCD file. Default is the current
-  directory.
-- **trace-name (optional)**: Name of the VCD file. Default is the name of the project plus
-  the name of the ELF file.
+- **timeout**: Maximum simulation time before aborting.
+- **trace (optional)**: Enable VCD dumps. Writes the output file to `build/vcd/trace.vcd`.
 
 ## License
 
