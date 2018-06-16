@@ -73,4 +73,4 @@ distclean: clean
 	@$(.SUBMAKE) -C $(.RVTESTSF) clean
 	@$(.SUBMAKE) -C $(.RVBENCHMARKSF) clean
 
-.PHONY: compile-tests compile-benchmarks run-tests run-benchmarks clean distclean
+.PHONY: verilate compile-tests build-model run-tests clean distclean
