@@ -19,7 +19,7 @@ UCONTROL    := -GUCONTROL="\"$(UFILE)"\"
 # C++ build
 CXX := g++
 CFLAGS := -std=c++17 -Wall -O3 # -g # -DDEBUG # -Wno-sign-compare
-CFLAGS_NEW := -faligned-new
+CFLAGS_NEW := -faligned-new -Wno-attributes
 VERILATOR_ROOT ?= $(shell bash -c 'verilator -V|grep VERILATOR_ROOT | head -1 | sed -e " s/^.*=\s*//"')
 VROOT := $(VERILATOR_ROOT)
 VINCD := $(VROOT)/include

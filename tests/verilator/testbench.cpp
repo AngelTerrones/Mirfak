@@ -28,6 +28,10 @@
 #include "aelf.h"
 #include "testbench.h"
 // -----------------------------------------------------------------------------
+#if defined(__WIN32__) || defined(__MINGW32__)
+#define mkdir(a, b) mkdir(a) /* mkdir command on Win32 does not support file permissions */
+#endif
+// -----------------------------------------------------------------------------
 #define ANSI_COLOR_RED     "\x1b[31m"
 #define ANSI_COLOR_GREEN   "\x1b[32m"
 #define ANSI_COLOR_YELLOW  "\x1b[33m"
