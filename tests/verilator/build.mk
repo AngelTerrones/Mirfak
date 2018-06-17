@@ -59,11 +59,11 @@ $(.VOBJ)/Vtop__ALL.a: $(VSOURCES)
 	+@$(.SUBMAKE) Vtop.mk
 
 # C++
-$(.VOBJ)/%.o: tests/verilator/%.cpp
+$(.VOBJ)/%.o: tests/verilator/%.cpp tests/verilator/%.h
 	@printf "%b" "$(.COM_COLOR)$(.COM_STRING)$(.OBJ_COLOR) $(@F) $(.NO_COLOR)\n"
 	@$(CXX) $(CFLAGS) -DEXE="\"$(EXE)\"" $(INCS) -c $< -o $@
 
-$(VOBJS): $(.VOBJ)/%.o: $(VINCD)/%.cpp
+$(VOBJS): $(.VOBJ)/%.o: $(VINCD)/%.cpp $(VINCD)/%.h
 	@printf "%b" "$(.COM_COLOR)$(.COM_STRING)$(.OBJ_COLOR) $(@F) $(.NO_COLOR)\n"
 	@$(CXX) $(CFLAGS) $(INCS) -Wno-format -c $< -o $@
 
