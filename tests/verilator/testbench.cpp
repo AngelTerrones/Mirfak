@@ -24,6 +24,7 @@
 #include <algorithm>
 #include <verilated.h>
 #include "Vtop.h"
+#include "Vtop__Dpi.h"
 #include "Vtop__Syms.h"
 #include "aelf.h"
 #include "testbench.h"
@@ -98,21 +99,20 @@ private:
         // -----------------------------------------------------------------------------
         // check for syscall
         bool CheckTOHOST(bool &ok) {
-                uint32_t tohost = *((uint32_t *)(MEMORY + TOHOST - MEMSTART));
+                uint32_t tohost = dpi_read_word(TOHOST);
                 if (tohost == 0)
                         return false;
-                bool isPtr      = (tohost - MEMSTART) <= MEMSZ;
-                bool _exit      = tohost == 1 || not isPtr;
-                ok              = tohost == 1;
-                m_exitCode      = tohost;
+                bool isPtr = (tohost - MEMSTART) <= MEMSZ;
+                bool _exit = tohost == 1 || not isPtr;
+                ok         = tohost == 1;
+                m_exitCode = tohost;
                 if (not _exit) {
                         const uint32_t data0 = tohost;
                         const uint32_t data1 = data0 + 8; // 64-bit aligned
-                        // abuse the fact that syscall and flag are bytes
-                        if (MEMORY[data0 - MEMSTART] == SYSCALL and MEMORY[data1 - MEMSTART] == 1) {
+                        if (dpi_read_word(data0) == SYSCALL and dpi_read_word(data1) == 1) {
                                 SyscallPrint(data0);
-                                *((uint32_t *)(MEMORY + FROMHOST - MEMSTART)) = 1; // reset to inital state
-                                *((uint32_t *)(MEMORY + TOHOST - MEMSTART)) = 0; // reset to inital state
+                                dpi_write_word(FROMHOST, 1); // reset to inital state
+                                dpi_write_word(TOHOST, 0);   // reset to inital state
                         } else {
                                 _exit = true;
                         }
@@ -122,10 +122,10 @@ private:
         // -----------------------------------------------------------------------------
         // For benchmarks, prints data from syscall 64.
         void SyscallPrint(const uint32_t base_addr) const {
-                const uint64_t data_addr = *(2 + (uint64_t *)(MEMORY + base_addr - MEMSTART));
-                const uint64_t size      = *(3 + (uint64_t *)(MEMORY + base_addr - MEMSTART));
+                const uint64_t data_addr = dpi_read_word(base_addr + 16); // dword 2: offset = 16 bytes.
+                const uint64_t size      = dpi_read_word(base_addr + 24); // dword 3: offset = 24 bytes.
                 for (uint32_t ii = 0; ii < size; ii++){
-                        printf("%c", MEMORY[data_addr - MEMSTART + ii]);
+                        printf("%c", dpi_read_byte(data_addr + ii));
                 }
         }
 public:
@@ -138,7 +138,7 @@ public:
                 bool ok = false;
                 LoadMemory(progfile);
                 printf(ANSI_COLOR_YELLOW "Executing file: %s\n" ANSI_COLOR_RESET, progfile.c_str());
-                for (; getTime() < max_time;) {
+                while (getTime() < max_time && !Verilated::gotFinish()) {
                         Tick();
                         if (CheckTOHOST(ok))
                                 break;
@@ -195,6 +195,10 @@ int main(int argc, char **argv) {
         }
         const uint32_t timeout   = std::stoul(s_timeout);
         std::unique_ptr<CORETB> tb(new CORETB());
+#ifdef DEBUG
+        Verilated::scopesDump();  // this shit should be in the fucking manual (verilator)
+#endif
+        svSetScope(svGetScopeFromName("TOP.top.memory"));
         if (trace) {
                 int status = mkdir("build/vcd", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
                 if (status && errno != EEXIST) {

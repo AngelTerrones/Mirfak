@@ -87,4 +87,39 @@ module ram #(
         dwbs_ack_o = dwbs_cyc_i && dwbs_stb_i && d_access;
     end
     //--------------------------------------------------------------------------
+    // SystemVerilog DPI functions
+    export "DPI-C" function dpi_read_word;
+    export "DPI-C" function dpi_read_byte;
+    export "DPI-C" function dpi_write_word;
+    //
+    function int dpi_read_word(int address);
+        if (address[31:ADDR_WIDTH] != BASE_ADDR[31:ADDR_WIDTH]) begin
+            $display("[RAM read word] Bad address: %h. Abort.\n", address);
+            $finish;
+        end
+        return {mem[address[ADDR_WIDTH-1:0] + 3],
+                mem[address[ADDR_WIDTH-1:0] + 2],
+                mem[address[ADDR_WIDTH-1:0] + 1],
+                mem[address[ADDR_WIDTH-1:0] + 0]};
+    endfunction
+    //
+    function byte dpi_read_byte(int address);
+        if (address[31:ADDR_WIDTH] != BASE_ADDR[31:ADDR_WIDTH]) begin
+            $display("[RAM read byte] Bad address: %h. Abort.\n", address);
+            $finish;
+        end
+        return mem[address[ADDR_WIDTH-1:0]];
+    endfunction
+    //
+    function void dpi_write_word(int address, int data);
+        if (address[31:ADDR_WIDTH] != BASE_ADDR[31:ADDR_WIDTH]) begin
+            $display("[RAM write word] Bad address: %h. Abort.\n", address);
+            $finish;
+        end
+        mem[address[ADDR_WIDTH-1:0] + 0] = data[7:0];
+        mem[address[ADDR_WIDTH-1:0] + 1] = data[15:8];
+        mem[address[ADDR_WIDTH-1:0] + 2] = data[23:16];
+        mem[address[ADDR_WIDTH-1:0] + 3] = data[31:24];
+    endfunction
+    //--------------------------------------------------------------------------
 endmodule

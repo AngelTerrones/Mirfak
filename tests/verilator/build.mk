@@ -39,7 +39,7 @@ ifeq ($(GCC7), 1)
 endif
 
 #--------------------------------------------------
-VOBJS	:= $(.VOBJ)/verilated.o $(.VOBJ)/verilated_vcd_c.o
+VOBJS	:= $(.VOBJ)/verilated.o $(.VOBJ)/verilated_vcd_c.o $(.VOBJ)/verilated_dpi.o
 SOURCES := testbench.cpp aelf.cpp
 OBJS	:= $(addprefix $(.VOBJ)/, $(subst .cpp,.o,$(SOURCES)))
 
