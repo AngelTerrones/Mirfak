@@ -11,19 +11,19 @@ VSOURCES	:= $(shell find . -name "*.v")
 VTOP		:= $(.TBDIR)/top.v
 UCONTROL    := -GUCONTROL="\"$(UFILE)"\"
 #--------------------------------------------------
-.VOBJ := $(BUILD_DIR)/obj_dir
-.SUBMAKE := $(MAKE) --no-print-directory --directory=$(.VOBJ) -f
-.VERILATE := verilator -O3 --trace -Wall -Wno-fatal --x-assign 1 -cc -y $(.RTLDIR) -y $(.TBDIR) -CFLAGS "-std=c++11 -O3" -Mdir $(.VOBJ) $(UCONTROL)
+.VOBJ		:= $(BUILD_DIR)/obj_dir
+.SUBMAKE	:= $(MAKE) --no-print-directory --directory=$(.VOBJ) -f
+.VERILATE	:= verilator -O3 --trace -Wall -Wno-fatal --x-assign 1 -cc -y $(.RTLDIR) -y $(.TBDIR) -CFLAGS "-std=c++11 -O3" -Mdir $(.VOBJ) $(UCONTROL)
 
 #--------------------------------------------------
 # C++ build
-CXX := g++
-CFLAGS := -std=c++17 -Wall -O3 # -g # -DDEBUG # -Wno-sign-compare
-CFLAGS_NEW := -faligned-new -Wno-attributes
-VERILATOR_ROOT ?= $(shell bash -c 'verilator -V|grep VERILATOR_ROOT | head -1 | sed -e " s/^.*=\s*//"')
-VROOT := $(VERILATOR_ROOT)
-VINCD := $(VROOT)/include
-VINC := -I$(VINCD) -I$(VINCD)/vltstd -I$(.VOBJ)
+CXX				:= g++
+CFLAGS			:= -std=c++17 -Wall -O3 # -g # -DDEBUG # -Wno-sign-compare
+CFLAGS_NEW		:= -faligned-new -Wno-attributes
+VERILATOR_ROOT	:= $(shell bash -c 'verilator -V|grep VERILATOR_ROOT | head -1 | sed -e " s/^.*=\s*//"')
+VROOT			:= $(VERILATOR_ROOT)
+VINCD			:= $(VROOT)/include
+VINC			:= -I$(VINCD) -I$(VINCD)/vltstd -I$(.VOBJ)
 
 #--------------------------------------------------
 ifeq ($(OS),Windows_NT)
@@ -39,7 +39,7 @@ ifeq ($(GCC7), 1)
 endif
 
 #--------------------------------------------------
-VOBJS	:= $(.VOBJ)/verilated.o $(.VOBJ)/verilated_vcd_c.o
+VOBJS	:= $(.VOBJ)/verilated.o $(.VOBJ)/verilated_vcd_c.o $(.VOBJ)/verilated_dpi.o
 SOURCES := testbench.cpp aelf.cpp
 OBJS	:= $(addprefix $(.VOBJ)/, $(subst .cpp,.o,$(SOURCES)))
 
@@ -59,11 +59,11 @@ $(.VOBJ)/Vtop__ALL.a: $(VSOURCES)
 	+@$(.SUBMAKE) Vtop.mk
 
 # C++
-$(.VOBJ)/%.o: tests/verilator/%.cpp
+$(.VOBJ)/%.o: tests/verilator/%.cpp tests/verilator/%.h
 	@printf "%b" "$(.COM_COLOR)$(.COM_STRING)$(.OBJ_COLOR) $(@F) $(.NO_COLOR)\n"
 	@$(CXX) $(CFLAGS) -DEXE="\"$(EXE)\"" $(INCS) -c $< -o $@
 
-$(VOBJS): $(.VOBJ)/%.o: $(VINCD)/%.cpp
+$(VOBJS): $(.VOBJ)/%.o: $(VINCD)/%.cpp $(VINCD)/%.h
 	@printf "%b" "$(.COM_COLOR)$(.COM_STRING)$(.OBJ_COLOR) $(@F) $(.NO_COLOR)\n"
 	@$(CXX) $(CFLAGS) $(INCS) -Wno-format -c $< -o $@
 

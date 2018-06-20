@@ -26,7 +26,8 @@ module top #(
              parameter [31:0] RESET_ADDR      = 32'h8000_0000,
              parameter [0:0]  ENABLE_COUNTERS = 1,
              parameter [0:0]  ENABLE_M_ISA    = 1,
-             parameter        UCONTROL        = "ucontrol.list"
+             parameter        UCONTROL        = "ucontrol.list",
+             parameter [31:0] MEM_SIZE        = 32'h0100_0000
              )(
                input wire clk_i,
                input wire rst_i
@@ -82,8 +83,8 @@ module top #(
     //
     ram #(/*AUTOINSTPARAM*/
           // Parameters
-          .ADDR_WIDTH(24),
-          .BASE_ADDR(32'h8000_0000)
+          .ADDR_WIDTH($clog2(MEM_SIZE)), // 16 MB
+          .BASE_ADDR(RESET_ADDR)
           ) memory (/*AUTOINST*/
                     // Outputs
                     .iwbs_dat_o      (iwbm_dat),
