@@ -13,12 +13,12 @@ UCONTROL    := -GUCONTROL="\"$(UFILE)"\"
 #--------------------------------------------------
 .VOBJ		:= $(BUILD_DIR)/obj_dir
 .SUBMAKE	:= $(MAKE) --no-print-directory --directory=$(.VOBJ) -f
-.VERILATE	:= verilator -O3 --trace -Wall -Wno-fatal --x-assign 1 -cc -y $(.RTLDIR) -y $(.TBDIR) -CFLAGS "-std=c++11 -O3" -Mdir $(.VOBJ) $(UCONTROL)
+.VERILATE	:= verilator -O3 --trace -Wall -Wno-fatal --x-assign 1 -cc -y $(.RTLDIR) -y $(.TBDIR) -CFLAGS "-std=c++11 -O3 -DDPI_DLLISPEC= -DDPI_DLLESPEC=" -Mdir $(.VOBJ) $(UCONTROL)
 
 #--------------------------------------------------
 # C++ build
 CXX				:= g++
-CFLAGS			:= -std=c++17 -Wall -O3 # -g # -DDEBUG # -Wno-sign-compare
+CFLAGS			:= -std=c++17 -Wall -O3 -DDPI_DLLISPEC= -DDPI_DLLESPEC= # -g # -DDEBUG # -Wno-sign-compare
 CFLAGS_NEW		:= -faligned-new -Wno-attributes
 VERILATOR_ROOT	:= $(shell bash -c 'verilator -V|grep VERILATOR_ROOT | head -1 | sed -e " s/^.*=\s*//"')
 VROOT			:= $(VERILATOR_ROOT)
