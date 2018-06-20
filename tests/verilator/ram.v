@@ -48,7 +48,7 @@ module ram #(
     //--------------------------------------------------------------------------
     localparam BYTES = 2**ADDR_WIDTH;
     //
-    reg [7:0]               mem[0:BYTES - 1] /*verilator public*/;
+    byte                    mem[0:BYTES - 1]; // FFS, this MUST BE BYTE, FOR DPI.
     wire [ADDR_WIDTH - 1:0] i_addr;
     wire [ADDR_WIDTH - 1:0] d_addr;
     wire                    i_access;
@@ -91,6 +91,8 @@ module ram #(
     export "DPI-C" function dpi_read_word;
     export "DPI-C" function dpi_read_byte;
     export "DPI-C" function dpi_write_word;
+    export "DPI-C" function dpi_load_mem;
+    import "DPI-C" function void c_load_mem(input byte mem[], input string filename);
     //
     function int dpi_read_word(int address);
         if (address[31:ADDR_WIDTH] != BASE_ADDR[31:ADDR_WIDTH]) begin
@@ -120,6 +122,10 @@ module ram #(
         mem[address[ADDR_WIDTH-1:0] + 1] = data[15:8];
         mem[address[ADDR_WIDTH-1:0] + 2] = data[23:16];
         mem[address[ADDR_WIDTH-1:0] + 3] = data[31:24];
+    endfunction
+    //
+    function void dpi_load_mem(string filename);
+        c_load_mem(mem, filename);
     endfunction
     //--------------------------------------------------------------------------
 endmodule
