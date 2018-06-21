@@ -316,7 +316,7 @@ module mirfak_core #(
     //
     assign id_busy = id_control[`CTRL_FENCEI] && ((ex_control[`CTRL_MEM_EN] && ex_control[`CTRL_MEM_RW]) ||
                                                   (wb_control[`CTRL_MEM_EN] && wb_control[`CTRL_MEM_RW]));
-    assign xint    = xinterrupt && !wb_bubble;
+    assign xint    = xinterrupt && !wb_bubble && !(wb_control[`CTRL_MEM_EN] && wb_control[`CTRL_MEM_RW]);
     assign xcall   = wb_control[`CTRL_ECALL_BREAK] && wb_instruction[31:20] == 12'b000000000000;
     assign xbreak  = wb_control[`CTRL_ECALL_BREAK] && wb_instruction[31:20] == 12'b000000000001;
     always @(*) begin

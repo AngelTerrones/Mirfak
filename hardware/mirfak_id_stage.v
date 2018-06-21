@@ -166,7 +166,7 @@ module mirfak_id_stage (
             ex_instruction_o <= NOP;
             ex_exception_o   <= 0;
             ex_xcause_o      <= 0;
-            ex_bubble_o      <= 0;
+            ex_bubble_o      <= 1;
             ex_control_o     <= 0;
         end else if (idex_enable_i) begin
             ex_pc_o          <= id_pc_i;
