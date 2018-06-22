@@ -125,7 +125,7 @@ module mirfak_ex_stage #(parameter [0:0]  ENABLE_MULTDIV = 1
             wb_pc4_o          <= 0;
             wb_instruction_o  <= NOP;
             wb_ex_exception_o <= 0;
-            wb_bubble_o       <= 0;
+            wb_bubble_o       <= 1;
             wb_control_o      <= 0;
         end else if (exwb_enable_i) begin
             wb_pc_o           <= ex_pc_i;

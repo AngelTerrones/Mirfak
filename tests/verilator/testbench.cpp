@@ -50,6 +50,10 @@
 #define SYSCALL  64
 #define TOHOST   0x80001000u
 #define FROMHOST 0x80001040u
+// For interrupt simulation
+#define XINT_S   0x80002000u
+#define XINT_T   0x80002004u
+#define XINT_E   0x80002008u
 
 // -----------------------------------------------------------------------------
 // DPI function
@@ -118,6 +122,13 @@ private:
                 return _exit;
         }
         // -----------------------------------------------------------------------------
+        //
+        void CheckInterrupts() {
+                m_top->xint_meip_i = dpi_read_word(XINT_E) != 0;
+                m_top->xint_mtip_i = dpi_read_word(XINT_T) != 0;
+                m_top->xint_msip_i = dpi_read_word(XINT_S) != 0;
+        }
+        // -----------------------------------------------------------------------------
         // For benchmarks, prints data from syscall 64.
         void SyscallPrint(const uint32_t base_addr) const {
                 const uint64_t data_addr = dpi_read_word(base_addr + 16); // dword 2: offset = 16 bytes.
@@ -134,12 +145,18 @@ public:
         // Run the CPU model.
         int SimulateCore(const std::string &progfile, const unsigned long max_time=1000000L) {
                 bool ok = false;
+                // Initial values
+                m_top->xint_meip_i = 0;
+                m_top->xint_mtip_i = 0;
+                m_top->xint_msip_i = 0;
+                //
                 dpi_load_mem(progfile.data());
                 printf(ANSI_COLOR_YELLOW "Executing file: %s\n" ANSI_COLOR_RESET, progfile.c_str());
                 while (getTime() < max_time && !Verilated::gotFinish()) {
                         Tick();
                         if (CheckTOHOST(ok))
                                 break;
+                        CheckInterrupts();
                 }
                 Tick();
                 return PrintExitMessage(ok, getTime(), max_time);

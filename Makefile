@@ -12,6 +12,7 @@ SHELL=bash
 .BFOLDER		= build
 .RVTESTSF		= tests/riscv-tests
 .RVBENCHMARKSF	= tests/benchmarks
+.RVXTRASF       = tests/extra-tests
 .MKTB			= tests/verilator/build.mk
 .TBEXE			= $(.BFOLDER)/$(.PROJECTNAME).exe --timeout 50000000 --file
 .UCGEN			= hardware/ucontrolgen.py
@@ -33,6 +34,7 @@ help:
 compile-tests:
 	+@$(.SUBMAKE) -C $(.RVTESTSF)
 	+@$(.SUBMAKE) -C $(.RVBENCHMARKSF)
+	+@$(.SUBMAKE) -C $(.RVXTRASF)
 
 # ------------------------------------------------------------------------------
 # verilate and build
@@ -53,8 +55,9 @@ build-model: verilate
 run-tests: compile-tests build-model
 	$(eval .RVTESTS:=$(shell find $(.RVTESTSF) -name "rv32ui*.elf" -o -name "rv32um*.elf" -o -name "rv32mi*.elf" ! -name "*breakpoint*.elf"))
 	$(eval .RVBENCHMARKS:=$(shell find $(.RVBENCHMARKSF) -name "*.riscv"))
+	$(eval .RVXTRAS:=$(shell find $(.RVXTRASF) -name "*.riscv"))
 
-	@for file in $(.RVTESTS) $(.RVBENCHMARKS) $(.RVXTRATESTS); do						\
+	@for file in $(.RVTESTS) $(.RVBENCHMARKS) $(.RVXTRAS); do						\
 		$(.TBEXE) $$file --mem-delay $$delay > /dev/null;								\
 		if [ $$? -eq 0 ]; then															\
 			printf "%-50b %b\n" $$file "$(.OK_COLOR)$(.OK_STRING)$(.NO_COLOR)";			\
@@ -72,5 +75,6 @@ distclean: clean
 	@find . | grep -E "(__pycache__|\.pyc|\.pyo|\.cache)" | xargs rm -rf
 	@$(.SUBMAKE) -C $(.RVTESTSF) clean
 	@$(.SUBMAKE) -C $(.RVBENCHMARKSF) clean
+	@$(.SUBMAKE) -C $(.RVXTRASF) clean
 
 .PHONY: verilate compile-tests build-model run-tests clean distclean

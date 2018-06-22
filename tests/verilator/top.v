@@ -30,7 +30,10 @@ module top #(
              parameter [31:0] MEM_SIZE        = 32'h0100_0000
              )(
                input wire clk_i,
-               input wire rst_i
+               input wire rst_i,
+               input wire xint_meip_i,
+               input wire xint_mtip_i,
+               input wire xint_msip_i
                );
     //--------------------------------------------------------------------------
     /*AUTOWIRE*/
@@ -77,9 +80,9 @@ module top #(
                          .dwbm_dat_i        (dwbm_dat_i),
                          .dwbm_ack_i        (dwbm_ack),
                          .dwbm_err_i        (0),
-                         .xint_meip_i       (0),
-                         .xint_mtip_i       (0),
-                         .xint_msip_i       (0));
+                         .xint_meip_i       (xint_meip_i),
+                         .xint_mtip_i       (xint_mtip_i),
+                         .xint_msip_i       (xint_msip_i));
     //
     ram #(/*AUTOINSTPARAM*/
           // Parameters

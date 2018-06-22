@@ -32,6 +32,7 @@ module mirfak_load_store_unit (
                                output reg [31:0] lsu_rdata_o,
                                output reg        lsu_busy_o,
                                // error
+                               input wire        lsu_is_xint_i,
                                output reg        lsu_misaligned_o,
                                output reg        lsu_ld_err_o,
                                output reg        lsu_st_err_o,
@@ -51,7 +52,7 @@ module mirfak_load_store_unit (
     reg [3:0]  msel_o;
     wire       mem_en;
     //
-    assign mem_en = lsu_en_i && !(|{lsu_misaligned_o, lsu_ld_err_o, lsu_st_err_o});
+    assign mem_en = lsu_en_i && !(|{lsu_misaligned_o, lsu_ld_err_o, lsu_st_err_o, lsu_is_xint_i});
     // exception
     always @(*) begin
         case (lsu_data_type_i)

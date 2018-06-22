@@ -144,7 +144,7 @@ module mirfak_core #(
                                  .pc_xret_i          (pc_xret),
                                  .pc_bj_sel_i        (take_branch),
                                  .pc_except_sel_i    (wb_exception),
-                                 .pc_xret_sel_i      (wb_xret), // TODO
+                                 .pc_xret_sel_i      (wb_xret),
                                  .iwbm_dat_i         (iwbm_dat_i),
                                  .iwbm_ack_i         (iwbm_ack_i),
                                  .iwbm_err_i         (iwbm_err_i),
@@ -181,7 +181,7 @@ module mirfak_core #(
                              .id_control_i       (id_control),
                              .wb_waddr_i         (wb_instruction[11:7]),
                              .wb_wdata_i         (wb_wdata),
-                             .wb_wen_i           (wb_control[`CTRL_RF_WE] && !wb_exception), // TODO
+                             .wb_wen_i           (wb_control[`CTRL_RF_WE] && !wb_exception),
                              .id_fwd_a_sel_i     (id_fwd_a_sel),
                              .id_fwd_b_sel_i     (id_fwd_b_sel),
                              .ex_fwd_data_i      (ex_fwd_data),
@@ -238,10 +238,11 @@ module mirfak_core #(
                                 // Inputs
                                 .lsu_address_i     (wb_alu_result),
                                 .lsu_wdata_i       (wb_lsu_wdata),
-                                .lsu_op_i          (wb_control[`CTRL_MEM_RW]), // TODO
-                                .lsu_en_i          (wb_control[`CTRL_MEM_EN]), // TODO
-                                .lsu_data_type_i   (wb_instruction[13:12]), // TODO: sacar de la instruccion
-                                .lsu_data_sign_ext (!wb_instruction[14]), // TODO
+                                .lsu_op_i          (wb_control[`CTRL_MEM_RW]),
+                                .lsu_en_i          (wb_control[`CTRL_MEM_EN]),
+                                .lsu_data_type_i   (wb_instruction[13:12]),
+                                .lsu_data_sign_ext (!wb_instruction[14]),
+                                .lsu_is_xint_i     (xint),
                                 .dwbm_dat_i        (dwbm_dat_i),
                                 .dwbm_ack_i        (dwbm_ack_i),
                                 .dwbm_err_i        (dwbm_err_i)
@@ -264,11 +265,11 @@ module mirfak_core #(
                         .xint_mtip_i         (xint_mtip_i),
                         .xint_msip_i         (xint_msip_i),
                         .csr_addr_i          (wb_instruction[31:20]),
-                        .csr_cmd_i           (wb_control[`CTRL_CSR_CMD]), // TODO
+                        .csr_cmd_i           (wb_control[`CTRL_CSR_CMD]),
                         .csr_rs1_zero_i      (wb_instruction[19:15] == 0),
                         .csr_wdata_i         (csr_wdata),
                         .wb_exception_i      (wb_exception),
-                        .wb_xret_i           (wb_xret), // TODO
+                        .wb_xret_i           (wb_xret),
                         .wb_exception_pc_i   (wb_pc),
                         .wb_xcause_i         (wb_xcause),
                         .wb_mtval_i          (wb_mtval),
@@ -304,7 +305,7 @@ module mirfak_core #(
                                    );
     // Handle final exception @ WB stage
     always @(*) begin
-        case (wb_control[`CTRL_SEL_WB]) // TODO
+        case (wb_control[`CTRL_SEL_WB])
             WB_ALU_SEL: wb_wdata = wb_alu_result;
             WB_LSU_SEL: wb_wdata = wb_lsu_rdata;
             WB_CSR_SEL: wb_wdata = csr_rdata;
