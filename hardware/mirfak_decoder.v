@@ -71,7 +71,7 @@ module mirfak_decoder #(
         endcase
         is_instr[2:0] = id_instruction_i[14:12];
         //
-        id_control_o = ucontrol[is_instr]; // TODO, ofc
+        id_control_o = ucontrol[is_instr];
     end
     //--------------------------------------------------------------------------
 endmodule
