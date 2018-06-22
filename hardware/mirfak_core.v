@@ -242,6 +242,7 @@ module mirfak_core #(
                                 .lsu_en_i          (wb_control[`CTRL_MEM_EN]),
                                 .lsu_data_type_i   (wb_instruction[13:12]),
                                 .lsu_data_sign_ext (!wb_instruction[14]),
+                                .lsu_is_xint_i     (xint),
                                 .dwbm_dat_i        (dwbm_dat_i),
                                 .dwbm_ack_i        (dwbm_ack_i),
                                 .dwbm_err_i        (dwbm_err_i)
@@ -316,7 +317,7 @@ module mirfak_core #(
     //
     assign id_busy = id_control[`CTRL_FENCEI] && ((ex_control[`CTRL_MEM_EN] && ex_control[`CTRL_MEM_RW]) ||
                                                   (wb_control[`CTRL_MEM_EN] && wb_control[`CTRL_MEM_RW]));
-    assign xint    = xinterrupt && !wb_bubble && !(wb_control[`CTRL_MEM_EN] && wb_control[`CTRL_MEM_RW]);
+    assign xint    = xinterrupt && !wb_bubble;
     assign xcall   = wb_control[`CTRL_ECALL_BREAK] && wb_instruction[31:20] == 12'b000000000000;
     assign xbreak  = wb_control[`CTRL_ECALL_BREAK] && wb_instruction[31:20] == 12'b000000000001;
     always @(*) begin
