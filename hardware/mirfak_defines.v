@@ -18,6 +18,9 @@
 // Description : Defines for constants used by the core.
 // -----------------------------------------------------------------------------
 
+`ifndef M_DEFINES
+`define M_DEFINES
+
 // -----------------------------------------------------------------------------
 // Opcodes
 parameter OPCODE_LUI    = 7'b0110111;
@@ -151,3 +154,5 @@ parameter CSR_CMD_CLEAR = 2'b11;
 `define CTRL_SEL_IMM     6:4
 `define CTRL_SEL_OP_B    3:2
 `define CTRL_SEL_OP_A    1:0
+
+`endif
