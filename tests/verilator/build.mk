@@ -18,7 +18,7 @@ UCONTROL    := -GUCONTROL="\"$(UFILE)"\"
 #--------------------------------------------------
 # C++ build
 CXX				:= g++
-CFLAGS			:= -std=c++17 -Wall -O3 -DDPI_DLLISPEC= -DDPI_DLLESPEC= # -g # -DDEBUG # -Wno-sign-compare
+CFLAGS			:= -std=c++17 -Wall -O3 -DDPI_DLLISPEC= -DDPI_DLLESPEC= -MD -MP #-g #-DDEBUG #-Wno-sign-compare
 CFLAGS_NEW		:= -faligned-new -Wno-attributes
 VERILATOR_ROOT	:= $(shell bash -c 'verilator -V|grep VERILATOR_ROOT | head -1 | sed -e " s/^.*=\s*//"')
 VROOT			:= $(VERILATOR_ROOT)
@@ -39,9 +39,10 @@ ifeq ($(GCC7), 1)
 endif
 
 #--------------------------------------------------
-VOBJS	:= $(.VOBJ)/verilated.o $(.VOBJ)/verilated_vcd_c.o $(.VOBJ)/verilated_dpi.o
-SOURCES := testbench.cpp aelf.cpp
-OBJS	:= $(addprefix $(.VOBJ)/, $(subst .cpp,.o,$(SOURCES)))
+VOBJS	 := $(.VOBJ)/verilated.o $(.VOBJ)/verilated_vcd_c.o $(.VOBJ)/verilated_dpi.o
+SOURCES  := testbench.cpp aelf.cpp
+OBJS	 := $(addprefix $(.VOBJ)/, $(subst .cpp,.o,$(SOURCES)))
+DEPFILES := $(addprefix $(.VOBJ)/, $(subst .cpp,.d,$(SOURCES)))
 
 # ------------------------------------------------------------------------------
 # targets
@@ -59,7 +60,7 @@ $(.VOBJ)/Vtop__ALL.a: $(VSOURCES)
 	+@$(.SUBMAKE) Vtop.mk
 
 # C++
-$(.VOBJ)/%.o: tests/verilator/%.cpp tests/verilator/%.h
+$(.VOBJ)/%.o: tests/verilator/%.cpp
 	@printf "%b" "$(.COM_COLOR)$(.COM_STRING)$(.OBJ_COLOR) $(@F) $(.NO_COLOR)\n"
 	@$(CXX) $(CFLAGS) -DEXE="\"$(EXE)\"" $(INCS) -c $< -o $@
 
@@ -71,5 +72,7 @@ $(BUILD_DIR)/$(EXE).exe: $(VOBJS) $(OBJS) $(.VOBJ)/Vtop__ALL.a
 	@printf "%b" "$(.COM_COLOR)$(.COM_STRING)$(.OBJ_COLOR) $(@F)$(.NO_COLOR)\n"
 	@$(CXX) $(INCS) $^ -lelf -o $@
 	@printf "%b" "$(.MSJ_COLOR)Compilation $(.OK_COLOR)$(.OK_STRING)$(.NO_COLOR)\n"
+
+-include $(DEPFILES)
 
 .PHONY: build-vlib build-core
