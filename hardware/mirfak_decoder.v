@@ -32,26 +32,27 @@ module mirfak_decoder #(
     //--------------------------------------------------------------------------
     reg [`CTRL_SZ] ucontrol [0:127];
     reg [6:0]      is_instr;
-    reg            is_lui, is_auipc, is_jal, is_jalr, is_branch, is_load;
-    reg            is_store, is_ri, is_rr, is_fence, is_system, is_m;
+    wire           is_lui, is_auipc, is_jal, is_jalr, is_branch, is_load;
+    wire           is_store, is_ri, is_rr, is_fence, is_system, is_m;
     //
     initial begin
         $readmemb(UCONTROL, ucontrol);
     end
     //
+    assign is_lui     = id_instruction_i[6:0] == 7'b0110111;
+    assign is_auipc   = id_instruction_i[6:0] == 7'b0010111;
+    assign is_jal     = id_instruction_i[6:0] == 7'b1101111;
+    assign is_jalr    = id_instruction_i[6:0] == 7'b1100111;
+    assign is_branch  = id_instruction_i[6:0] == 7'b1100011;
+    assign is_load    = id_instruction_i[6:0] == 7'b0000011;
+    assign is_store   = id_instruction_i[6:0] == 7'b0100011;
+    assign is_ri      = id_instruction_i[6:0] == 7'b0010011 && ((id_instruction_i[13:12] == 2'b01) ? (!id_instruction_i[31] && id_instruction_i[29:25] == 5'b00000) : 1);
+    assign is_rr      = id_instruction_i[6:0] == 7'b0110011 && !id_instruction_i[31] && id_instruction_i[29:25] == 5'b00000;
+    assign is_fence   = id_instruction_i[6:0] == 7'b0001111;
+    assign is_system  = id_instruction_i[6:0] == 7'b1110011;
+    assign is_m       = id_instruction_i[6:0] == 7'b0110011 && id_instruction_i[31:25] == 7'b0000001 && ENABLE_MULTDIV;
+
     always @(*) begin
-        is_lui     = id_instruction_i[6:0] == 7'b0110111;
-        is_auipc   = id_instruction_i[6:0] == 7'b0010111;
-        is_jal     = id_instruction_i[6:0] == 7'b1101111;
-        is_jalr    = id_instruction_i[6:0] == 7'b1100111;
-        is_branch  = id_instruction_i[6:0] == 7'b1100011;
-        is_load    = id_instruction_i[6:0] == 7'b0000011;
-        is_store   = id_instruction_i[6:0] == 7'b0100011;
-        is_ri      = id_instruction_i[6:0] == 7'b0010011 && ((id_instruction_i[13:12] == 2'b01) ? (!id_instruction_i[31] && id_instruction_i[29:25] == 5'b00000) : 1);
-        is_rr      = id_instruction_i[6:0] == 7'b0110011 && !id_instruction_i[31] && id_instruction_i[29:25] == 5'b00000;
-        is_fence   = id_instruction_i[6:0] == 7'b0001111;
-        is_system  = id_instruction_i[6:0] == 7'b1110011;
-        is_m       = id_instruction_i[6:0] == 7'b0110011 && id_instruction_i[31:25] == 7'b0000001 && ENABLE_MULTDIV;
         // upper bits: instruction type
         // low bits:   funct3
         case (1'b1)

@@ -150,7 +150,7 @@ module mirfak_core #(
                                  .iwbm_err_i         (iwbm_err_i),
                                  .ifid_enable_i      (ifid_enable),
                                  .if_abort_fetch_i   (wb_exception || take_branch || wb_xret),
-                                 .if_restart_i       (id_busy),
+                                 .if_halt_fetch_i    (id_busy),
                                  .ifid_clear_i       (ifid_clear),
                                  .if_ready_o         (if_ready)
                                  );
