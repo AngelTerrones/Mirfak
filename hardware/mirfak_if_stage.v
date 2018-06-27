@@ -52,16 +52,15 @@ module mirfak_if_stage #(
                            input wire        ifid_enable_i,
                            input wire        ifid_clear_i,
                            input wire        if_abort_fetch_i,
-                           input wire        if_restart_i,
+                           input wire        if_halt_fetch_i,
                            output reg        if_ready_o
                            );
     //--------------------------------------------------------------------------
     //
-    localparam ifu_state_reset = 4'b0001;
-    localparam ifu_state_fetch = 4'b0010;
-    localparam ifu_state_stall = 4'b0100;
-    localparam ifu_state_kill  = 4'b1000;
-    reg [3:0] ifu_state;
+    localparam ifu_state_reset = 3'b001;
+    localparam ifu_state_fetch = 3'b010;
+    localparam ifu_state_stall = 3'b100;
+    reg [2:0] ifu_state;
     reg       instr_sel;
     //
     reg [31:0] pc, pc4, npc;
@@ -82,7 +81,6 @@ module mirfak_if_stage #(
     always @(posedge clk_i) begin
         if (rst_i) begin
             pc <= RESET_ADDR;
-        end else if (if_restart_i) begin
         end else if (ifid_enable_i || if_abort_fetch_i) begin
             pc <= npc;
         end
@@ -123,58 +121,27 @@ module mirfak_if_stage #(
         if (rst_i) begin
             ifu_state  <= ifu_state_reset;
             instr_sel  <= 0;
-            iwbm_cyc_o <= 0;
-            iwbm_stb_o <= 0;
         end else begin
             case (ifu_state)
                 ifu_state_reset: begin
                     ifu_state  <= ifu_state_fetch;
-                    iwbm_cyc_o <= 1'b1;
-                    iwbm_stb_o <= 1'b1;
                 end
                 ifu_state_fetch: begin
-                    if (if_abort_fetch_i || if_restart_i) begin
-                        ifu_state     <= ifu_state_kill;
-                        iwbm_cyc_o    <= 1'b0;
-                        iwbm_stb_o    <= 1'b0;
-                        instruction_q <= NOP;
-                        instr_sel     <= 1'b0;
-                    end else if ((iwbm_ack_i || iwbm_err_i) && !ifid_enable_i) begin
+                    if ((iwbm_ack_i || iwbm_err_i) && !ifid_enable_i) begin
                         ifu_state     <= ifu_state_stall;
-                        iwbm_cyc_o    <= 1'b0;
-                        iwbm_stb_o    <= 1'b0;
                         instruction_q <= (iwbm_err_i) ? NOP : iwbm_dat_i;
                         instr_sel     <= 1'b1;
                     end
                 end
                 ifu_state_stall: begin
-                    if (if_abort_fetch_i) begin
-                        ifu_state     <= ifu_state_kill;
-                        iwbm_cyc_o    <= 1'b0;
-                        iwbm_stb_o    <= 1'b0;
-                        instruction_q <= NOP;
-                        instr_sel     <= 1'b0;
-                    end else if (ifid_enable_i) begin
+                    if (if_abort_fetch_i || ifid_enable_i) begin
                         ifu_state     <= ifu_state_fetch;
-                        iwbm_cyc_o    <= 1'b1;
-                        iwbm_stb_o    <= 1'b1;
-                        instruction_q <= NOP;
-                        instr_sel     <= 1'b0;
-                    end
-                end
-                ifu_state_kill : begin
-                    if (!if_abort_fetch_i && !if_restart_i) begin
-                        ifu_state     <= ifu_state_fetch;
-                        iwbm_cyc_o    <= 1'b1;
-                        iwbm_stb_o    <= 1'b1;
                         instruction_q <= NOP;
                         instr_sel     <= 1'b0;
                     end
                 end
                 default: begin
                     ifu_state  <= ifu_state_reset;
-                    iwbm_cyc_o <= 1'b0;
-                    iwbm_stb_o <= 1'b0;
                     instr_sel  <= 1'b0;
                 end
             endcase
@@ -183,6 +150,14 @@ module mirfak_if_stage #(
 
     always @(*) begin
         iwbm_addr_o  = pc;
+        iwbm_cyc_o   = 0;
+        iwbm_stb_o   = 0;
+        if (ifu_state == ifu_state_fetch) begin
+            if (!if_halt_fetch_i && !if_abort_fetch_i) begin
+                iwbm_cyc_o  = 1;
+                iwbm_stb_o  = 1;
+            end
+        end
     end
     //--------------------------------------------------------------------------
 endmodule
