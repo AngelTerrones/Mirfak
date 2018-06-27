@@ -55,21 +55,19 @@ module mirfak_controller #(
                              output reg             ifid_clear_o
                              );
     //--------------------------------------------------------------------------
-    reg [4:0] rs1, rs2;
-    reg       fwd_a_ex, fwd_a_wb;
-    reg       fwd_b_ex, fwd_b_wb;
-    reg       wb_ready, ex_ready, id_ready, if_ready;
+    wire [4:0] rs1, rs2;
+    wire       fwd_a_ex, fwd_a_wb;
+    wire       fwd_b_ex, fwd_b_wb;
+    wire       wb_ready, ex_ready, id_ready, if_ready;
     // forwarding rules
+    assign rs1      = id_instruction_i[19:15];
+    assign rs2      = id_instruction_i[24:20];
+    assign fwd_a_ex = |ex_wa_i && rs1 == ex_wa_i && ex_wen_i;
+    assign fwd_b_ex = |ex_wa_i && rs2 == ex_wa_i && ex_wen_i;
+    assign fwd_a_wb = |wb_wa_i && rs1 == wb_wa_i && wb_wen_i;
+    assign fwd_b_wb = |wb_wa_i && rs2 == wb_wa_i && wb_wen_i;
+
     always @(*) begin
-        rs1 = id_instruction_i[19:15];
-        rs2 = id_instruction_i[24:20];
-        //
-        fwd_a_ex = |ex_wa_i && rs1 == ex_wa_i && ex_wen_i;
-        fwd_b_ex = |ex_wa_i && rs2 == ex_wa_i && ex_wen_i;
-        //
-        fwd_a_wb = |wb_wa_i && rs1 == wb_wa_i && wb_wen_i;
-        fwd_b_wb = |wb_wa_i && rs2 == wb_wa_i && wb_wen_i;
-        //
         case (1'b1)
             fwd_a_ex: id_fwd_a_sel_o = FWD_EX_SEL;
             fwd_a_wb: id_fwd_a_sel_o = FWD_WB_SEL;
@@ -82,12 +80,10 @@ module mirfak_controller #(
         endcase
     end
     //
-    always @(*) begin
-        wb_ready = !wb_lsu_busy_i && !wb_csr_busy_i;
-        ex_ready = wb_ready && !ex_busy_i;
-        id_ready = ex_ready && !id_busy_i && !((fwd_a_ex || fwd_b_ex) && ex_is_mem_or_csr_i);
-        if_ready = id_ready && if_ready_i;
-    end
+    assign wb_ready = !wb_lsu_busy_i && !wb_csr_busy_i;
+    assign ex_ready = wb_ready && !ex_busy_i;
+    assign id_ready = ex_ready && !id_busy_i && !((fwd_a_ex || fwd_b_ex) && ex_is_mem_or_csr_i);
+    assign if_ready = id_ready && if_ready_i;
     always @(*) begin
         exwb_enable_o = ex_ready;
         idex_enable_o = id_ready;
