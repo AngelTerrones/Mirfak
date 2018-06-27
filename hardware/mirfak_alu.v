@@ -61,6 +61,8 @@ module mirfak_alu (
             COMPARE_LT:  compare_o = {31'b0, operand_a_i < operand_b_i};
             COMPARE_LTU: compare_o = {31'b0, $signed(operand_a_i) < $signed(operand_b_i)};
         endcase
+    end
+    always @(*) begin
         // final mux
         case (alu_op_i)
             ALU_OP_ADDER:   result_o = adder_o;

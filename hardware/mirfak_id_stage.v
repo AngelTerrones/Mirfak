@@ -66,11 +66,11 @@ module mirfak_id_stage (
     //
     reg [31:0]  fdata_a, fdata_b;
     reg [31:0]  operand_a, operand_b;
-    reg         exception;
+    wire        exception;
     reg [3:0]   xcause;
-    reg         is_eq, is_lt, is_ltu;
-    reg [31:0]  imm_i, imm_s, imm_b, imm_u, imm_j, imm_final;
-    reg [31:0]  pc_j_b, pc_jr;
+    wire        is_eq, is_lt, is_ltu;
+    wire [31:0] imm_i, imm_s, imm_b, imm_u, imm_j, imm_final;
+    wire [31:0] pc_j_b, pc_jr;
     reg [31:0]  mtval;
     wire        bj_error;
     //
@@ -85,14 +85,14 @@ module mirfak_id_stage (
                                   .wdata_i   (wb_wdata_i),
                                   .wen_i     (wb_wen_i));
     //
+    // verilator lint_off WIDTH
+    assign imm_i = $signed(id_instruction_i[31:20]);
+    assign imm_s = $signed({id_instruction_i[31:25], id_instruction_i[11:7]});
+    assign imm_b = $signed({id_instruction_i[31], id_instruction_i[7], id_instruction_i[30:25], id_instruction_i[11:8], 1'b0});
+    assign imm_u = {id_instruction_i[31:12], {12{1'b0}}};
+    assign imm_j = $signed({id_instruction_i[31], id_instruction_i[19:12], id_instruction_i[20], id_instruction_i[30:21], 1'b0});
+    // verilator lint_on WIDTH
     always @(*) begin
-        // verilator lint_off WIDTH
-        imm_i = $signed(id_instruction_i[31:20]);
-        imm_s = $signed({id_instruction_i[31:25], id_instruction_i[11:7]});
-        imm_b = $signed({id_instruction_i[31], id_instruction_i[7], id_instruction_i[30:25], id_instruction_i[11:8], 1'b0});
-        imm_u = {id_instruction_i[31:12], {12{1'b0}}};
-        imm_j = $signed({id_instruction_i[31], id_instruction_i[19:12], id_instruction_i[20], id_instruction_i[30:21], 1'b0});
-        // verilator lint_on WIDTH
         case (id_control_i[`CTRL_SEL_IMM])
             3'b000:  imm_final  = imm_i;
             3'b001:  imm_final  = imm_s;
@@ -134,24 +134,22 @@ module mirfak_id_stage (
         endcase
     end
     //
+    assign is_eq   = fdata_a == fdata_b;
+    assign is_lt   = $signed(fdata_a) < $signed(fdata_b);
+    assign is_ltu  = fdata_a < fdata_b;
+    assign pc_j_b  = id_pc_i + (id_control_i[`CTRL_IS_J] ? imm_j : imm_b);
+    assign pc_jr   = fdata_a + imm_i;
     always @(*) begin
-        is_eq          = fdata_a == fdata_b;
-        is_lt          = $signed(fdata_a) < $signed(fdata_b);
-        is_ltu         = fdata_a < fdata_b;
         take_branch_o  = |{is_eq && id_control_i[`CTRL_BEQ], !is_eq && id_control_i[`CTRL_BNE],
                            is_lt && id_control_i[`CTRL_BLT], !is_lt && id_control_i[`CTRL_BGE],
                            is_ltu && id_control_i[`CTRL_BLTU], !is_ltu && id_control_i[`CTRL_BGEU],
                            id_control_i[`CTRL_IS_J]} && idex_enable_i;
-        //
-        pc_j_b          = id_pc_i + (id_control_i[`CTRL_IS_J] ? imm_j : imm_b);
-        pc_jr           = fdata_a + imm_i;
-        //
         pc_bj_target_o  = (id_control_i[`CTRL_IS_J] && !id_instruction_i[3]) ? pc_jr & 32'hFFFFFFFE : pc_j_b;
     end
     //
-    assign bj_error = take_branch_o && |pc_bj_target_o[1:0];
+    assign bj_error  = take_branch_o && |pc_bj_target_o[1:0];
+    assign exception = id_if_exception_i || id_control_i[`CTRL_INVALID] || bj_error;
     always @(*) begin
-        exception = id_if_exception_i || id_control_i[`CTRL_INVALID] || bj_error;
         case (1'b1)
             id_if_exception_i: begin xcause = id_if_xcause_i;         mtval = id_pc_i;          end
             bj_error:          begin xcause = E_INST_ADDR_MISALIGNED; mtval = pc_bj_target_o;   end
