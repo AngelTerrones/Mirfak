@@ -193,7 +193,7 @@ private:
 void PrintHelp() {
         printf("RISC-V CPU Verilator model.\n");
         printf("Usage:\n");
-        printf("\t" EXE ".exe --file <ELF file> --timeout <max simulation time> [--trace] [--help]\n");
+        printf("\t" EXE ".exe --file <ELF file> [--timeout <max simulation time>] [--trace] [--help]\n");
 }
 
 // -----------------------------------------------------------------------------
