@@ -89,7 +89,7 @@ private:
                 if (ok) {
                         printf(ANSI_COLOR_GREEN "Simulation done. Time %u\n" ANSI_COLOR_RESET, time);
                         exit_code = 0;
-                } else if (time < max_time) {
+                } else if (time < max_time || max_time == 0) {
                         printf(ANSI_COLOR_RED "Simulation error. Exit code: %08X. Time: %u\n" ANSI_COLOR_RESET, m_exitCode, time);
                         exit_code = 1;
                 } else {
