@@ -101,9 +101,7 @@ module mirfak_ex_stage #(parameter [0:0]  ENABLE_MULTDIV = 1
                             .div_enable         (ex_control_i[`CTRL_IS_MULDIV] && ex_instruction_i[14]),
                             .div_abort          (ex_abort_muldiv));
     end else begin
-        // verilator lint_off UNUSED
-        wire __x__ = ex_abort_muldiv;
-        // verilator lint_on UNUSED
+        wire unused = ex_abort_muldiv;
         assign mult_result = 32'bx;
         assign mult_ack    = 0;
         assign div_result  = 32'bx;
