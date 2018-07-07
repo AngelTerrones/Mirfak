@@ -34,8 +34,8 @@ module mirfak_load_store_unit (
                                // error
                                input wire        lsu_is_xint_i,
                                output reg        lsu_misaligned_o,
-                               output reg        lsu_ld_err_o,
-                               output reg        lsu_st_err_o,
+                               output wire       lsu_ld_err_o,
+                               output wire       lsu_st_err_o,
                                // Data port
                                output reg [31:0] dwbm_addr_o,
                                output reg [31:0] dwbm_dat_o,
@@ -54,14 +54,14 @@ module mirfak_load_store_unit (
     //
     assign mem_en = lsu_en_i && !(|{lsu_misaligned_o, lsu_ld_err_o, lsu_st_err_o, lsu_is_xint_i});
     // exception
+    assign lsu_ld_err_o = lsu_en_i && !lsu_op_i && dwbm_err_i;
+    assign lsu_st_err_o = lsu_en_i && lsu_op_i && dwbm_err_i;
     always @(*) begin
         case (lsu_data_type_i)
             LSU_TYPE_HALF: lsu_misaligned_o = lsu_en_i && lsu_address_i[0];
             LSU_TYPE_WORD: lsu_misaligned_o = lsu_en_i && |lsu_address_i[1:0];
             default:       lsu_misaligned_o = 0;
         endcase
-        lsu_ld_err_o = lsu_en_i && !lsu_op_i && dwbm_err_i;
-        lsu_st_err_o = lsu_en_i && lsu_op_i && dwbm_err_i;
     end
     // data format: write
     always @(*) begin
@@ -82,7 +82,6 @@ module mirfak_load_store_unit (
     end // always @ (*)
     // data format: read
     always @(*) begin
-        // verilator lint_off WIDTH
         case (lsu_data_type_i)
             LSU_TYPE_BYTE: begin
                 case (lsu_address_i[1:0])
@@ -105,7 +104,6 @@ module mirfak_load_store_unit (
                 mdat_i = 32'bx;
             end
         endcase
-        // verilator lint_on WIDTH
     end
     //
     always @(*) begin

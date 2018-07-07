@@ -17,13 +17,12 @@ UCONTROL    := -GUCONTROL="\"$(UFILE)"\"
 
 #--------------------------------------------------
 # C++ build
-CXX				:= g++
-CFLAGS			:= -std=c++17 -Wall -O3 -DDPI_DLLISPEC= -DDPI_DLLESPEC= -MD -MP #-g #-DDEBUG #-Wno-sign-compare
-CFLAGS_NEW		:= -faligned-new -Wno-attributes
-VERILATOR_ROOT	:= $(shell bash -c 'verilator -V|grep VERILATOR_ROOT | head -1 | sed -e " s/^.*=\s*//"')
-VROOT			:= $(VERILATOR_ROOT)
-VINCD			:= $(VROOT)/include
-VINC			:= -I$(VINCD) -I$(VINCD)/vltstd -I$(.VOBJ)
+CXX			:= g++
+CFLAGS		:= -std=c++17 -Wall -O3 -DDPI_DLLISPEC= -DDPI_DLLESPEC= -MD -MP #-g #-DDEBUG #-Wno-sign-compare
+CFLAGS_NEW	:= -faligned-new -Wno-attributes
+VROOT		:= $(shell bash -c 'verilator -V|grep VERILATOR_ROOT | head -1 | sed -e " s/^.*=\s*//"')
+VINCD		:= $(VROOT)/include
+VINC		:= -I$(VINCD) -I$(VINCD)/vltstd -I$(.VOBJ)
 
 #--------------------------------------------------
 ifeq ($(OS),Windows_NT)
@@ -64,7 +63,7 @@ $(.VOBJ)/%.o: tests/verilator/%.cpp
 	@printf "%b" "$(.COM_COLOR)$(.COM_STRING)$(.OBJ_COLOR) $(@F) $(.NO_COLOR)\n"
 	@$(CXX) $(CFLAGS) -DEXE="\"$(EXE)\"" $(INCS) -c $< -o $@
 
-$(VOBJS): $(.VOBJ)/%.o: $(VINCD)/%.cpp $(VINCD)/%.h
+$(VOBJS): $(.VOBJ)/%.o: $(VINCD)/%.cpp
 	@printf "%b" "$(.COM_COLOR)$(.COM_STRING)$(.OBJ_COLOR) $(@F) $(.NO_COLOR)\n"
 	@$(CXX) $(CFLAGS) $(INCS) -Wno-format -c $< -o $@
 
