@@ -100,7 +100,7 @@ module mirfak_if_stage #(
             id_instruction_o  <= (instr_sel) ? instruction_q : iwbm_dat_i;
             id_if_exception_o <= exception;
             id_if_xcause_o    <= xcause;
-            id_bubble         <= 0; // TODO: verify
+            id_bubble         <= 0;
         end
     end
     // exception
@@ -116,7 +116,6 @@ module mirfak_if_stage #(
         if_ready_o  = iwbm_ack_i || iwbm_err_i || instr_sel;
     end
     // WBM Instruction port
-    // TODO: recheck logic
     always @(posedge clk_i) begin
         if (rst_i) begin
             ifu_state  <= ifu_state_reset;
