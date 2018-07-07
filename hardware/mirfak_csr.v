@@ -26,33 +26,33 @@ module mirfak_csr #(
                     parameter [0:0]  ENABLE_COUNTERS = 1,
                     parameter [0:0]  ENABLE_M_ISA = 0
                     )(
-                      input wire        clk_i,
-                      input wire        rst_i,
+                      input wire         clk_i,
+                      input wire         rst_i,
                       // cpu interface
-                      input wire        xint_meip_i,
-                      input wire        xint_mtip_i,
-                      input wire        xint_msip_i,
+                      input wire         xint_meip_i,
+                      input wire         xint_mtip_i,
+                      input wire         xint_msip_i,
                       // pipeline interface
-                      input wire [11:0] csr_addr_i,
-                      input wire [1:0]  csr_cmd_i,
-                      input wire        csr_rs1_zero_i,
-                      input wire [31:0] csr_wdata_i,
-                      output reg [31:0] csr_rdata_o,
+                      input wire [11:0]  csr_addr_i,
+                      input wire [1:0]   csr_cmd_i,
+                      input wire         csr_rs1_zero_i,
+                      input wire [31:0]  csr_wdata_i,
+                      output wire [31:0] csr_rdata_o,
                       // exception signals
-                      input wire        wb_exception_i,
-                      input wire        wb_xret_i,
+                      input wire         wb_exception_i,
+                      input wire         wb_xret_i,
                       // verilator lint_off UNUSED
-                      input wire [31:0] wb_exception_pc_i,
+                      input wire [31:0]  wb_exception_pc_i,
                       // verilator lint_on UNUSED
-                      input wire [3:0]  wb_xcause_i,
-                      input wire [31:0] wb_mtval_i,
-                      output reg        csr_exception_o,
-                      output reg        xinterrupt_o,
-                      output reg [3:0]  xint_xcause_o,
-                      output reg [31:0] pc_except_o,
-                      output reg [31:0] pc_xret_o,
+                      input wire [3:0]   wb_xcause_i,
+                      input wire [31:0]  wb_mtval_i,
+                      output wire        csr_exception_o,
+                      output reg         xinterrupt_o,
+                      output reg [3:0]   xint_xcause_o,
+                      output wire [31:0] pc_except_o,
+                      output wire [31:0] pc_xret_o,
                       // extra
-                      input wire        wb_bubble_i
+                      input wire         wb_bubble_i
                       );
     //--------------------------------------------------------------------------
     wire [31:0] mstatus;
@@ -75,24 +75,21 @@ module mirfak_csr #(
     reg [3:0]   mcause_mecode;
     // interrupts
     // verilator lint_off UNUSED
-    reg [31:0]  pend_int;
+    wire [31:0] pend_int;
     // verilator lint_on UNUSED
     // extra signals
     reg [16:0]  is_csr_reg;
-    reg         csr_illegal, csr_wen;
+    wire        csr_illegal, csr_wen;
     reg [31:0]  csr_wdata, csr_rdata;
     wire        valid_cmd;
     //
-    assign mstatus   = {19'b0, 2'b11, 3'b0, mstatus_mpie, 3'b0, mstatus_mie, 3'b0};
-    assign mip       = {20'b0, xint_meip_i, 3'b0, xint_mtip_i, 3'b0, xint_msip_i, 3'b0};
-    assign mie       = {20'b0, mie_meie, 3'b0, mie_mtie, 3'b0, mie_msie, 3'b0};
-    assign mcause    = {mcause_interrupt, 27'b0, mcause_mecode};
-    assign valid_cmd = (csr_cmd_i[1] && !csr_rs1_zero_i) || (csr_cmd_i == CSR_CMD_WRITE);
-    //
-    always @(*) begin
-        csr_illegal  = (valid_cmd && (csr_addr_i[11:10] == 2'b11)) || (|csr_cmd_i && !(|is_csr_reg));
-        csr_wen      = |csr_cmd_i && (csr_addr_i[11:10] != 2'b11) && |is_csr_reg;  // write only if cmd, is r/w, and the register exists.
-    end
+    assign mstatus     = {19'b0, 2'b11, 3'b0, mstatus_mpie, 3'b0, mstatus_mie, 3'b0};
+    assign mip         = {20'b0, xint_meip_i, 3'b0, xint_mtip_i, 3'b0, xint_msip_i, 3'b0};
+    assign mie         = {20'b0, mie_meie, 3'b0, mie_mtie, 3'b0, mie_msie, 3'b0};
+    assign mcause      = {mcause_interrupt, 27'b0, mcause_mecode};
+    assign valid_cmd   = (csr_cmd_i[1] && !csr_rs1_zero_i) || (csr_cmd_i == CSR_CMD_WRITE);
+    assign csr_illegal = (valid_cmd && (csr_addr_i[11:10] == 2'b11)) || (|csr_cmd_i && !(|is_csr_reg));
+    assign csr_wen     = |csr_cmd_i && (csr_addr_i[11:10] != 2'b11) && |is_csr_reg;  // write only if cmd, is r/w, and the register exists.
     // check CSR address
     always @(*) begin
         is_csr_reg[0]   = csr_addr_i == MISA;
@@ -114,9 +111,7 @@ module mirfak_csr #(
         is_csr_reg[16]  = csr_addr_i == INSTRETH || csr_addr_i == MINSTRETH;
     end
     // interrupts
-    always @(*) begin
-        pend_int  = mstatus_mie ? mip & mie : 0;
-    end
+    assign pend_int  = mstatus_mie ? mip & mie : 0;
     always @(posedge clk_i) begin
         xinterrupt_o <= |{pend_int[11], pend_int[7], pend_int[3]} && ! wb_exception_i;
         case (1'b1)
@@ -251,11 +246,9 @@ module mirfak_csr #(
         endcase
     end
     //
-    always @(*) begin
-        csr_exception_o = csr_illegal;
-        pc_except_o     = mtvec;
-        pc_xret_o       = mepc;
-        csr_rdata_o     = csr_rdata;
-    end
+    assign csr_exception_o = csr_illegal;
+    assign pc_except_o     = mtvec;
+    assign pc_xret_o       = mepc;
+    assign csr_rdata_o     = csr_rdata;
     //--------------------------------------------------------------------------
 endmodule

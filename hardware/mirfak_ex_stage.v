@@ -51,7 +51,7 @@ module mirfak_ex_stage #(parameter [0:0]  ENABLE_MULTDIV = 1
                            // forwarding
                            output reg [31:0]     ex_fwd_data_o,
                            // pipeline control
-                           output reg            ex_busy_o,
+                           output wire           ex_busy_o,
                            input wire            ex_abort_muldiv,
                            input wire            exwb_enable_i,
                            input wire            exwb_clear_i
@@ -108,8 +108,8 @@ module mirfak_ex_stage #(parameter [0:0]  ENABLE_MULTDIV = 1
         assign div_ack     = 0;
     end endgenerate
     //
+    assign ex_busy_o  = ex_control_i[`CTRL_IS_MULDIV] && !mult_ack && !div_ack;
     always @(*) begin
-        ex_busy_o     = ex_control_i[`CTRL_IS_MULDIV] && !mult_ack && !div_ack;
         case ({ex_control_i[`CTRL_IS_MULDIV], ex_instruction_i[14]})
             2'b10:   ex_fwd_data_o  = mult_result;
             2'b11:   ex_fwd_data_o  = div_result;
