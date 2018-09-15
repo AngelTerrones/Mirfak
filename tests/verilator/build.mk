@@ -66,7 +66,7 @@ $(.VOBJ)/%.o: tests/verilator/cpp/%.cpp
 
 $(VOBJS): $(.VOBJ)/%.o: $(VINCD)/%.cpp
 	@printf "%b" "$(.COM_COLOR)$(.COM_STRING)$(.OBJ_COLOR) $(@F) $(.NO_COLOR)\n"
-	@$(CXX) $(CFLAGS) $(INCS) -Wno-format -c $< -o $@
+	@$(CXX) $(CFLAGS) $(INCS) -Wno-format -Wno-sign-compare -c $< -o $@
 
 $(BUILD_DIR)/$(EXE).exe: $(VOBJS) $(OBJS) $(.VOBJ)/Vtop__ALL.a
 	@printf "%b" "$(.COM_COLOR)$(.COM_STRING)$(.OBJ_COLOR) $(@F)$(.NO_COLOR)\n"
