@@ -40,6 +40,7 @@ endif
 #--------------------------------------------------
 VOBJS			:= $(.VOBJ)/verilated.o $(.VOBJ)/verilated_vcd_c.o $(.VOBJ)/verilated_dpi.o
 SOURCES		:= testbench.cpp aelf.cpp
+SOURCES		:= aelf.cpp coretb.cpp main.cpp ram.cpp
 OBJS			:= $(addprefix $(.VOBJ)/, $(subst .cpp,.o,$(SOURCES)))
 DEPFILES	:= $(addprefix $(.VOBJ)/, $(subst .cpp,.d,$(SOURCES)))
 
