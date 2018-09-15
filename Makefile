@@ -57,13 +57,13 @@ run-tests: compile-tests build-model
 	$(eval .RVBENCHMARKS:=$(shell find $(.RVBENCHMARKSF) -name "*.riscv"))
 	$(eval .RVXTRAS:=$(shell find $(.RVXTRASF) -name "*.riscv"))
 
-	@for file in $(.RVTESTS) $(.RVBENCHMARKS) $(.RVXTRAS); do						\
-		$(.TBEXE) $$file --mem-delay $$delay > /dev/null;								\
-		if [ $$? -eq 0 ]; then															\
-			printf "%-50b %b\n" $$file "$(.OK_COLOR)$(.OK_STRING)$(.NO_COLOR)";			\
-		else																			\
+	@for file in $(.RVTESTS) $(.RVBENCHMARKS) $(.RVXTRAS); do											\
+		$(.TBEXE) $$file --mem-delay $$delay > /dev/null;														\
+		if [ $$? -eq 0 ]; then																											\
+			printf "%-50b %b\n" $$file "$(.OK_COLOR)$(.OK_STRING)$(.NO_COLOR)";				\
+		else																																				\
 			printf "%-50s %b" $$file "$(.ERROR_COLOR)$(.ERROR_STRING)$(.NO_COLOR)\n";	\
-		fi;																				\
+		fi;																																					\
 	done
 # ------------------------------------------------------------------------------
 # clean

@@ -6,23 +6,23 @@ include tests/verilator/pprint.mk
 # verilate
 #--------------------------------------------------
 .RTLDIR		:= hardware
-.TBDIR		:= tests/verilator
+.TBDIR		:= tests/verilator/verilog
 VSOURCES	:= $(shell find . -name "*.v")
-VTOP		:= $(.TBDIR)/top.v
-UCONTROL    := -GUCONTROL="\"$(UFILE)"\"
+VTOP			:= $(.TBDIR)/top.v
+UCONTROL  := -GUCONTROL="\"$(UFILE)"\"
 #--------------------------------------------------
-.VOBJ		:= $(BUILD_DIR)/obj_dir
+.VOBJ			:= $(BUILD_DIR)/obj_dir
 .SUBMAKE	:= $(MAKE) --no-print-directory --directory=$(.VOBJ) -f
 .VERILATE	:= verilator -O3 --trace -Wall -Wno-fatal --x-assign 1 -cc -y $(.RTLDIR) -y $(.TBDIR) -CFLAGS "-std=c++11 -O3 -DDPI_DLLISPEC= -DDPI_DLLESPEC=" -Mdir $(.VOBJ) $(UCONTROL)
 
 #--------------------------------------------------
 # C++ build
-CXX			:= g++
-CFLAGS		:= -std=c++17 -Wall -O3 -DDPI_DLLISPEC= -DDPI_DLLESPEC= -MD -MP #-g #-DDEBUG #-Wno-sign-compare
+CXX					:= g++
+CFLAGS			:= -std=c++17 -Wall -O3 -DDPI_DLLISPEC= -DDPI_DLLESPEC= -MD -MP #-g #-DDEBUG #-Wno-sign-compare
 CFLAGS_NEW	:= -faligned-new -Wno-attributes
-VROOT		:= $(shell bash -c 'verilator -V|grep VERILATOR_ROOT | head -1 | sed -e " s/^.*=\s*//"')
-VINCD		:= $(VROOT)/include
-VINC		:= -I$(VINCD) -I$(VINCD)/vltstd -I$(.VOBJ)
+VROOT				:= $(shell bash -c 'verilator -V|grep VERILATOR_ROOT | head -1 | sed -e " s/^.*=\s*//"')
+VINCD				:= $(VROOT)/include
+VINC				:= -I$(VINCD) -I$(VINCD)/vltstd -I$(.VOBJ)
 
 #--------------------------------------------------
 ifeq ($(OS),Windows_NT)
@@ -38,10 +38,10 @@ ifeq ($(GCC7), 1)
 endif
 
 #--------------------------------------------------
-VOBJS	 := $(.VOBJ)/verilated.o $(.VOBJ)/verilated_vcd_c.o $(.VOBJ)/verilated_dpi.o
-SOURCES  := testbench.cpp aelf.cpp
-OBJS	 := $(addprefix $(.VOBJ)/, $(subst .cpp,.o,$(SOURCES)))
-DEPFILES := $(addprefix $(.VOBJ)/, $(subst .cpp,.d,$(SOURCES)))
+VOBJS			:= $(.VOBJ)/verilated.o $(.VOBJ)/verilated_vcd_c.o $(.VOBJ)/verilated_dpi.o
+SOURCES		:= testbench.cpp aelf.cpp
+OBJS			:= $(addprefix $(.VOBJ)/, $(subst .cpp,.o,$(SOURCES)))
+DEPFILES	:= $(addprefix $(.VOBJ)/, $(subst .cpp,.d,$(SOURCES)))
 
 # ------------------------------------------------------------------------------
 # targets
@@ -59,7 +59,7 @@ $(.VOBJ)/Vtop__ALL.a: $(VSOURCES)
 	+@$(.SUBMAKE) Vtop.mk
 
 # C++
-$(.VOBJ)/%.o: tests/verilator/%.cpp
+$(.VOBJ)/%.o: tests/verilator/cpp/%.cpp
 	@printf "%b" "$(.COM_COLOR)$(.COM_STRING)$(.OBJ_COLOR) $(@F) $(.NO_COLOR)\n"
 	@$(CXX) $(CFLAGS) -DEXE="\"$(EXE)\"" $(INCS) -c $< -o $@
 
