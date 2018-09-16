@@ -28,7 +28,7 @@ module mirfak_core #(
                      parameter [31:0] RESET_ADDR      = 32'h8000_0000,
                      parameter [0:0]  ENABLE_COUNTERS = 1,
                      parameter [0:0]  ENABLE_M_ISA    = 1,
-                     parameter        UCONTROL        = "ucontrol.list"
+                     parameter        UCONTROL        = "ucontrol.mem"
                      )(
                        input wire         clk_i,
                        input wire         rst_i,
