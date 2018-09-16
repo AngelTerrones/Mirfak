@@ -69,7 +69,8 @@ module mirfak_id_stage (
     wire        exception;
     reg [3:0]   xcause;
     wire        is_eq, is_lt, is_ltu;
-    wire [31:0] imm_i, imm_s, imm_b, imm_u, imm_j, imm_final;
+    wire [31:0] imm_i, imm_s, imm_b, imm_u, imm_j;
+    reg [31:0]  imm_final;
     wire [31:0] pc_j_b, pc_jr;
     reg [31:0]  mtval;
     wire        bj_error;
