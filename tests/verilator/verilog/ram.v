@@ -46,6 +46,7 @@ module ram #(
                output reg        dwbs_ack_o
                );
     //--------------------------------------------------------------------------
+    // TODO: FIX THIS SHIT: we == 1 writes even if cyc is 0
     localparam BYTES = 2**ADDR_WIDTH;
     //
     byte                    mem[0:BYTES - 1]; // FFS, this MUST BE BYTE, FOR DPI.
@@ -88,13 +89,14 @@ module ram #(
     end
     //--------------------------------------------------------------------------
     // SystemVerilog DPI functions
-    export "DPI-C" function dpi_read_word;
-    export "DPI-C" function dpi_read_byte;
-    export "DPI-C" function dpi_write_word;
-    export "DPI-C" function dpi_load_mem;
-    import "DPI-C" function void c_load_mem(input byte mem[], input string filename);
+    export "DPI-C" function ram_v_dpi_read_word;
+    export "DPI-C" function ram_v_dpi_read_byte;
+    export "DPI-C" function ram_v_dpi_write_word;
+    export "DPI-C" function ram_v_dpi_write_byte;
+    export "DPI-C" function ram_v_dpi_load;
+    import "DPI-C" function void ram_c_dpi_load(input byte mem[], input string filename);
     //
-    function int dpi_read_word(int address);
+    function int ram_v_dpi_read_word(int address);
         if (address[31:ADDR_WIDTH] != BASE_ADDR[31:ADDR_WIDTH]) begin
             $display("[RAM read word] Bad address: %h. Abort.\n", address);
             $finish;
@@ -105,7 +107,7 @@ module ram #(
                 mem[address[ADDR_WIDTH-1:0] + 0]};
     endfunction
     //
-    function byte dpi_read_byte(int address);
+    function byte ram_v_dpi_read_byte(int address);
         if (address[31:ADDR_WIDTH] != BASE_ADDR[31:ADDR_WIDTH]) begin
             $display("[RAM read byte] Bad address: %h. Abort.\n", address);
             $finish;
@@ -113,7 +115,7 @@ module ram #(
         return mem[address[ADDR_WIDTH-1:0]];
     endfunction
     //
-    function void dpi_write_word(int address, int data);
+    function void ram_v_dpi_write_word(int address, int data);
         if (address[31:ADDR_WIDTH] != BASE_ADDR[31:ADDR_WIDTH]) begin
             $display("[RAM write word] Bad address: %h. Abort.\n", address);
             $finish;
@@ -124,8 +126,16 @@ module ram #(
         mem[address[ADDR_WIDTH-1:0] + 3] = data[31:24];
     endfunction
     //
-    function void dpi_load_mem(string filename);
-        c_load_mem(mem, filename);
+    function void ram_v_dpi_write_byte(int address, byte data);
+        if (address[31:ADDR_WIDTH] != BASE_ADDR[31:ADDR_WIDTH]) begin
+            $display("[RAM write word] Bad address: %h. Abort.\n", address);
+            $finish;
+        end
+        mem[address[ADDR_WIDTH-1:0]] = data;
+    endfunction
+    //
+    function void ram_v_dpi_load(string filename);
+        ram_c_dpi_load(mem, filename);
     endfunction
     //--------------------------------------------------------------------------
 endmodule

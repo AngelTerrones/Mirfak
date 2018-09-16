@@ -57,6 +57,7 @@ license](https://en.wikipedia.org/wiki/MIT_License).
     - `benchmarks`: Basic benchmarks written in C. Taken from
       [riscv-tests](http://riscv.org/software-tools/riscv-tests/) (git rev
       b747a10).
+    - `extra-tests`: Aditional test for the interrupt interface.
     - `riscv-tests`: Basic instruction-level tests. Taken from
       [riscv-tests](http://riscv.org/software-tools/riscv-tests/) (git rev
       b747a10).
@@ -76,11 +77,13 @@ The following parameters can be used to configure the cpu core.
 
 - **HART_ID (default = 0)**: This sets the ID of the core (for multi-core applications).
 - **RESET_ADDR (default = 0x80000000)**: The start address of the program.
-- **ENABLE_COUNTERS (default = 1)**: Add support for the `CYCLE[H]` and `INSTRET[H]` counters. If set to zero,
-reading the counters will return zero or a random number.
+- **ENABLE_COUNTERS (default = 1)**: Add support for the `CYCLE[H]` and
+  `INSTRET[H]` counters. If set to zero, reading the counters will return zero
+  or a random number.
 - **ENABLE\_M\_ISA (default = 1)**: Enable hardware support for the RV32M ISA.
-- **UCONTROL (default = "ucontrol.list")**: Path to a plain text file with the definition of the control signals, in binary
-format, for each supported instruction.
+- **UCONTROL (default = "ucontrol.list")**: Path to a plain text file with the
+  definition of the control signals, in binary format, for each supported
+  instruction.
 
 ## Simulation
 ### Dependencies for simulation
@@ -114,7 +117,7 @@ the project:
 #### Parameters of the C++ model
 
 - **file**: RISC-V ELF file to execute.
-- **timeout**: Maximum simulation time before aborting.
+- **timeout (optional)**: Maximum simulation time before aborting.
 - **trace (optional)**: Enable VCD dumps. Writes the output file to `build/vcd/trace.vcd`.
 
 ## License
