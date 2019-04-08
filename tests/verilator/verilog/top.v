@@ -1,17 +1,5 @@
 // -----------------------------------------------------------------------------
-// Copyright (C) 2018 Angel Terrones <angelterrones@gmail.com>
-//
-// Permission to use, copy, modify, and/or distribute this software for any
-// purpose with or without fee is hereby granted, provided that the above
-// copyright notice and this permission notice appear in all copies.
-//
-// THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-// WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
-// MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-// ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-// WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
-// ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-// OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+// Copyright (C) 2019 Angel Terrones <angelterrones@gmail.com>
 // -----------------------------------------------------------------------------
 // Title       : CPU testbench
 // Project     : Mirfak
@@ -36,23 +24,31 @@ module top #(
                input wire xint_msip_i
                );
     //--------------------------------------------------------------------------
+    localparam ADDR_WIDTH = $clog2(MEM_SIZE);
+    localparam BASE_ADDR  = RESET_ADDR;
     /*AUTOWIRE*/
     // Beginning of automatic wires (for undeclared instantiated-module outputs)
-    wire [31:0]         dwbm_addr;            // From cpu of mirfak_core.v
-    wire                dwbm_cyc;             // From cpu of mirfak_core.v
-    wire [31:0]         dwbm_dat_o;           // From cpu of mirfak_core.v
-    wire [31:0]         dwbm_dat_i;           // From cpu of mirfak_core.v
-    wire [3:0]          dwbm_sel;             // From cpu of mirfak_core.v
-    wire                dwbm_stb;             // From cpu of mirfak_core.v
-    wire                dwbm_we;              // From cpu of mirfak_core.v
-    wire [31:0]         iwbm_addr;            // From cpu of mirfak_core.v
-    wire                iwbm_cyc;             // From cpu of mirfak_core.v
-    wire [31:0]         iwbm_dat;             // From cpu of mirfak_core.v
-    wire                iwbm_stb;             // From cpu of mirfak_core.v
+    wire                dwbm_ack_i;             // From memory of ram.v
+    wire [31:0]         dwbm_addr_o;            // From cpu of mirfak_core.v
+    wire                dwbm_cyc_o;             // From cpu of mirfak_core.v
+    wire [31:0]         dwbm_dat_i;             // From memory of ram.v
+    wire [31:0]         dwbm_dat_o;             // From cpu of mirfak_core.v
+    wire [3:0]          dwbm_sel_o;             // From cpu of mirfak_core.v
+    wire                dwbm_stb_o;             // From cpu of mirfak_core.v
+    wire                dwbm_we_o;              // From cpu of mirfak_core.v
+    wire                iwbm_ack_i;             // From memory of ram.v
+    wire [31:0]         iwbm_addr_o;            // From cpu of mirfak_core.v
+    wire                iwbm_cyc_o;             // From cpu of mirfak_core.v
+    wire [31:0]         iwbm_dat_i;             // From memory of ram.v
+    wire                iwbm_stb_o;             // From cpu of mirfak_core.v
     // End of automatics
-    wire                iwbm_ack;
-    wire                dwbm_ack;
 
+    /*
+     mirfak_core AUTO_TEMPLATE (
+     .iwbm_err_i (0),
+     .dwbm_err_i(0),
+     );
+     */
     mirfak_core #(/*AUTOINSTPARAM*/
                   // Parameters
                   .HART_ID              (HART_ID[31:0]),
@@ -62,51 +58,60 @@ module top #(
                   .UCONTROL             (UCONTROL)
                   ) cpu (/*AUTOINST*/
                          // Outputs
-                         .iwbm_addr_o       (iwbm_addr),
-                         .iwbm_cyc_o        (iwbm_cyc),
-                         .iwbm_stb_o        (iwbm_stb),
-                         .dwbm_addr_o       (dwbm_addr),
-                         .dwbm_dat_o        (dwbm_dat_o),
-                         .dwbm_sel_o        (dwbm_sel),
-                         .dwbm_cyc_o        (dwbm_cyc),
-                         .dwbm_stb_o        (dwbm_stb),
-                         .dwbm_we_o         (dwbm_we),
+                         .iwbm_addr_o           (iwbm_addr_o[31:0]),
+                         .iwbm_cyc_o            (iwbm_cyc_o),
+                         .iwbm_stb_o            (iwbm_stb_o),
+                         .dwbm_addr_o           (dwbm_addr_o[31:0]),
+                         .dwbm_dat_o            (dwbm_dat_o[31:0]),
+                         .dwbm_sel_o            (dwbm_sel_o[3:0]),
+                         .dwbm_cyc_o            (dwbm_cyc_o),
+                         .dwbm_stb_o            (dwbm_stb_o),
+                         .dwbm_we_o             (dwbm_we_o),
                          // Inputs
-                         .clk_i             (clk_i),
-                         .rst_i             (rst_i),
-                         .iwbm_dat_i        (iwbm_dat),
-                         .iwbm_ack_i        (iwbm_ack),
-                         .iwbm_err_i        (0),
-                         .dwbm_dat_i        (dwbm_dat_i),
-                         .dwbm_ack_i        (dwbm_ack),
-                         .dwbm_err_i        (0),
-                         .xint_meip_i       (xint_meip_i),
-                         .xint_mtip_i       (xint_mtip_i),
-                         .xint_msip_i       (xint_msip_i));
-    //
+                         .clk_i                 (clk_i),
+                         .rst_i                 (rst_i),
+                         .iwbm_dat_i            (iwbm_dat_i[31:0]),
+                         .iwbm_ack_i            (iwbm_ack_i),
+                         .iwbm_err_i            (0),             // Templated
+                         .dwbm_dat_i            (dwbm_dat_i[31:0]),
+                         .dwbm_ack_i            (dwbm_ack_i),
+                         .dwbm_err_i            (0),             // Templated
+                         .xint_meip_i           (xint_meip_i),
+                         .xint_mtip_i           (xint_mtip_i),
+                         .xint_msip_i           (xint_msip_i));
+
+    /*
+     ram AUTO_TEMPLATE (
+     .iwbs_\(.*\)_i (iwbm_\1_o[]),
+     .dwbs_\(.*\)_i (dwbm_\1_o[]),
+     .iwbs_\(.*\)_o (iwbm_\1_i[]),
+     .dwbs_\(.*\)_o (dwbm_\1_i[]),
+     );
+    */
     ram #(/*AUTOINSTPARAM*/
           // Parameters
-          .ADDR_WIDTH($clog2(MEM_SIZE)), // 16 MB
-          .BASE_ADDR(RESET_ADDR)
+          .ADDR_WIDTH (ADDR_WIDTH),
+          .BASE_ADDR  (BASE_ADDR)
           ) memory (/*AUTOINST*/
                     // Outputs
-                    .iwbs_dat_o      (iwbm_dat),
-                    .iwbs_ack_o      (iwbm_ack),
-                    .dwbs_dat_o      (dwbm_dat_i),
-                    .dwbs_ack_o      (dwbm_ack),
-                    // Inputs
-                    .iwbs_addr_i     (iwbm_addr),
-                    .iwbs_cyc_i      (iwbm_cyc),
-                    .iwbs_stb_i      (iwbm_stb),
-                    .dwbs_addr_i     (dwbm_addr),
-                    .dwbs_dat_i      (dwbm_dat_o),
-                    .dwbs_sel_i      (dwbm_sel),
-                    .dwbs_cyc_i      (dwbm_cyc),
-                    .dwbs_stb_i      (dwbm_stb),
-                    .dwbs_we_i       (dwbm_we));
+                    .iwbs_dat_o        (iwbm_dat_i[31:0]),  // Templated
+                    .iwbs_ack_o        (iwbm_ack_i),        // Templated
+                    .dwbs_dat_o        (dwbm_dat_i[31:0]),  // Templated
+                    .dwbs_ack_o        (dwbm_ack_i),        // Templated
+                                                            // Inputs
+                    .iwbs_addr_i       (iwbm_addr_o[31:0]), // Templated
+                    .iwbs_cyc_i        (iwbm_cyc_o),        // Templated
+                    .iwbs_stb_i        (iwbm_stb_o),        // Templated
+                    .dwbs_addr_i       (dwbm_addr_o[31:0]), // Templated
+                    .dwbs_dat_i        (dwbm_dat_o[31:0]),  // Templated
+                    .dwbs_sel_i        (dwbm_sel_o[3:0]),   // Templated
+                    .dwbs_cyc_i        (dwbm_cyc_o),        // Templated
+                    .dwbs_stb_i        (dwbm_stb_o),        // Templated
+                    .dwbs_we_i         (dwbm_we_o));        // Templated
     //--------------------------------------------------------------------------
 endmodule
 
 // Local Variables:
-// verilog-library-directories:("." "../../hardware")
+// verilog-library-directories: ("." "../../../rtl")
+// flycheck-verilator-include-path: ("." "../../../rtl")
 // End:
