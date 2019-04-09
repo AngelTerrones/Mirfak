@@ -31,3 +31,6 @@ output/
 *lock*
 *.txt
 *.ods
+
+# ignore compliance
+tests/riscv-compliance
