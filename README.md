@@ -69,7 +69,7 @@ The easy way to get the toolchain is to download the binary installer from the
 [GNU MCU Eclipse](https://gnu-mcu-eclipse.github.io/) project.
 
 The version used to simulate the design is the [Embedded GCC
-v7.2.0-3-20180506](https://gnu-mcu-eclipse.github.io/blog/2018/05/06/riscv-none-gcc-v7-2-0-3-20180506-released/)
+v8.1.0-2-20181019](https://github.com/gnu-mcu-eclipse/riscv-none-gcc/releases/tag/v8.1.0-2-20181019)
 
 ## Verilog module parameters
 
@@ -118,10 +118,10 @@ the project:
 
 - **file**: RISC-V ELF file to execute.
 - **timeout (optional)**: Maximum simulation time before aborting.
-- **trace (optional)**: Enable VCD dumps. Writes the output file to `build/vcd/trace.vcd`.
+- **trace (optional)**: Enable VCD dumps. Writes the output file to `build/trace_core.vcd`.
 
 ## License
 
-Copyright (c) 2018 Angel Terrones (<angelterrones@gmail.com>).
+Copyright (c) 2019 Angel Terrones (<angelterrones@gmail.com>).
 
 Release under the [MIT License](MITlicense.md).
