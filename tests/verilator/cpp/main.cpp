@@ -58,16 +58,13 @@ int main(int argc, char **argv) {
 #ifdef DEBUG
         Verilated::scopesDump();
 #endif
+        const char* vcdFile = "build/trace_" EXE ".vcd";
         if (trace) {
-                int status = mkdir("build/vcd", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-                if (status && errno != EEXIST) {
-                        perror("[OS]");
-                        fprintf(stderr, ANSI_COLOR_RED "[CORETB] Unable to create VCD folder\n" ANSI_COLOR_RESET);
-                        exit(EXIT_FAILURE);
-                }
-                tb->OpenTrace("build/vcd/trace.vcd");
+                printf("[CORETB] Generate VCD file in build folder\n");
+                tb->OpenTrace(vcdFile);
         }
         int exitCode = tb->SimulateCore(s_progfile, timeout);
+        tb->CloseTrace();
         delete tb;
         return exitCode;
 }

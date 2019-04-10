@@ -27,7 +27,7 @@ void intHandler(int signo){
         printf("\r[SIGNAL] Quit...\n");
         fflush(stdout);
         quit = true;
-        signal(SIGINT, SIG_DFL); // just in case...
+        signal(SIGINT, SIG_DFL); // restore default handler.
 }
 // -----------------------------------------------------------------------------
 CORETB::CORETB() : Testbench(TBFREQ, TBTS), m_exitCode(-1) {
@@ -40,6 +40,13 @@ int CORETB::SimulateCore(const std::string &progfile, const unsigned long max_ti
         m_top->xint_meip_i = 0;
         m_top->xint_mtip_i = 0;
         m_top->xint_msip_i = 0;
+        // -------------------------------------------------------------
+        // Add trap handler to catch [Ctrl + C]
+        // Configure the signal to abort (blocking) system calls
+        struct sigaction saStruct;
+        saStruct.sa_flags   = 0;
+        saStruct.sa_handler = intHandler;
+        sigaction(SIGINT, &saStruct, NULL);
         // -------------------------------------------------------------
         LoadMemory(progfile);
         Reset();
@@ -74,11 +81,12 @@ bool CORETB::CheckTOHOST(bool &ok) {
         uint32_t tohost = ram_v_dpi_read_word(TOHOST);
         if (tohost == 0)
                 return false;
-        bool isPtr = (tohost - MEMSTART) <= MEMSZ;
+        bool isPtr = (tohost - MEMSTART) <= MEMSZ; // check if the value is inside the memory region = is a pointer
         bool _exit = tohost == 1 || not isPtr;
         ok         = tohost == 1;
         m_exitCode = tohost;
         if (not _exit) {
+                // if tohost is not an exit code from the test, is a sycall (executin a benchmark).
                 const uint32_t data0 = tohost;
                 const uint32_t data1 = data0 + 8; // 64-bit aligned
                 if (ram_v_dpi_read_word(data0) == SYSCALL and ram_v_dpi_read_word(data1) == 1) {
@@ -94,6 +102,7 @@ bool CORETB::CheckTOHOST(bool &ok) {
 // -----------------------------------------------------------------------------
 void CORETB::CheckInterrupts() {
         svSetScope(svGetScopeFromName("TOP.top.memory")); // Set the scope before using DPI functions
+        //  Writing to XINT_X address will trigger X-type of interrupt.
         m_top->xint_meip_i = ram_v_dpi_read_word(XINT_E) != 0;
         m_top->xint_mtip_i = ram_v_dpi_read_word(XINT_T) != 0;
         m_top->xint_msip_i = ram_v_dpi_read_word(XINT_S) != 0;
