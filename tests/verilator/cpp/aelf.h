@@ -28,7 +28,8 @@ public:
         char     m_data[4];
 };
 
-bool isELF   (const char *filename);
-void elfread (const char *filename, ELFSECTION **&sections);
+bool			isELF     (const char *filename);
+void			elfread   (const char *filename, ELFSECTION **&sections);
+uint32_t	getSymbol (const char *filename, const char *symbolName);
 
 #endif

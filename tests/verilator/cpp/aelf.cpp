@@ -42,10 +42,10 @@ bool isELF(const char *filename) {
                 perror("[OS]");
                 return false;
         }
-        if (fgetc(fp) != 0x7f) return false;
-        if (fgetc(fp) != 'E') return false;
-        if (fgetc(fp) != 'L') return false;
-        if (fgetc(fp) != 'F') return false;
+        if (fgetc(fp) != 0x7f) {fclose(fp); return false;}
+        if (fgetc(fp) != 'E')  {fclose(fp); return false;}
+        if (fgetc(fp) != 'L')  {fclose(fp); return false;}
+        if (fgetc(fp) != 'F')  {fclose(fp); return false;}
         fclose(fp);
 
         return true;
@@ -207,4 +207,58 @@ void elfread(const char *filename, ELFSECTION **&sections) {
         // nuke
         elf_end(elf);
         close(fd);
+}
+
+uint32_t getSymbol (const char *filename, const char *symbolName) {
+        // Initialize library
+        if (elf_version(EV_CURRENT) == EV_NONE) {
+                fprintf(stderr, "[ELFLOADER] ELF library initialization failed: %s\n", elf_errmsg(-1));
+                perror("[OS]");
+                exit(EXIT_FAILURE);
+        }
+        // open filename
+        int fd = open(filename, O_RDONLY | O_BINARY, 0);
+        if (fd < 0) {
+                fprintf(stderr, "[ELFLOADER] Unable to open file: %s\n", filename);
+                perror("[OS]");
+                exit(EXIT_FAILURE);
+        }
+        Elf *elf = elf_begin(fd, ELF_C_READ, nullptr);
+        if (elf == nullptr) {
+                fprintf(stderr, "[ELFLOADER] elf_begin(): %s\n", elf_errmsg(-1));
+                exit(EXIT_FAILURE);
+        }
+        // Check ELF type
+        Elf_Kind ek = elf_kind(elf);
+        if (ek != ELF_K_ELF) {
+                fprintf(stderr, "[ELFLOADER] Not an ELF object. Abort\n");
+                exit(EXIT_FAILURE);
+        }
+        // get section list
+        Elf_Scn *scn = NULL;
+        GElf_Shdr shdr;
+        char *name;
+        while ((scn = elf_nextscn(elf, scn)) != NULL) {
+                gelf_getshdr(scn, &shdr);
+                if (shdr.sh_type == SHT_SYMTAB) {
+                        Elf_Data *edata = elf_getdata(scn, NULL);
+                        uint32_t symbolCount = shdr.sh_size / shdr.sh_entsize;
+                        GElf_Sym sym;
+                        for (uint32_t ii = 0; ii < symbolCount; ii++) {
+                                gelf_getsym(edata, ii, &sym);
+                                name = elf_strptr(elf, shdr.sh_link, sym.st_name);
+                                if (std::strcmp(symbolName, name) == 0) {
+                                        // printf("Symbol found: 0x%jx\n", sym.st_value);
+                                        elf_end(elf);
+                                        close(fd);
+                                        return sym.st_value;
+                                }
+                        }
+                }
+        }
+        // FAILURE: return -1
+        fprintf(stderr, "[ELFLOADER] Symbol %s does not exists.\n", elf_errmsg(-1));
+        elf_end(elf);
+        close(fd);
+        return -1;
 }

@@ -48,8 +48,11 @@ DEPFILES	:= $(addprefix $(VOBJ)/, $(subst .cpp,.d,$(SOURCES)))
 all: build-core
 build-core: $(VSOURCES) $(VOBJ)/Vtop__ALL.a $(OUT)/$(EXE).exe
 
+run: build-core
+	$(OUT)/$(EXE).exe $(ARGS)
+
 clean:
-	@rm -rf $(VOBJ) $(OUT)/$(EXE).exe
+	@rm -rf $(VOBJ)
 
 .SECONDARY: $(OBJS)
 

@@ -38,8 +38,6 @@
 // -----------------------------------------------------------------------------
 // syscall (benchmarks)
 #define SYSCALL  64
-#define TOHOST   0x80001000u
-#define FROMHOST 0x80001040u
 // For interrupt simulation
 #define XINT_S   0x80002000u
 #define XINT_T   0x80002004u

@@ -23,7 +23,7 @@
 void printHelp() {
         printf("RISC-V CPU Verilator model.\n");
         printf("Usage:\n");
-        printf("\t" EXE ".exe --file <ELF file> [--timeout <max time>] [--trace]\n");
+        printf("\t" EXE ".exe --file <ELF file> [--timeout <max time>] [--signature <signature file>] [--trace]\n");
         printf("\t" EXE ".exe --help\n");
 }
 
@@ -31,11 +31,12 @@ void printHelp() {
 // Main
 int main(int argc, char **argv) {
         INPUTPARSER input(argc, argv);
-        const std::string &s_progfile = input.GetCmdOption("--file");
-        const std::string &s_timeout  = input.GetCmdOption("--timeout");
-        const bool         trace      = input.CmdOptionExist("--trace");
+        const std::string &s_progfile  = input.GetCmdOption("--file");
+        const std::string &s_timeout   = input.GetCmdOption("--timeout");
+        const std::string &s_signature = input.GetCmdOption("--signature");
+        const bool         trace       = input.CmdOptionExist("--trace");
         // help
-        const bool         help       = input.CmdOptionExist("--help");
+        const bool         help        = input.CmdOptionExist("--help");
         //
         bool     badParams = false;
         uint32_t timeout   = 0;
@@ -63,7 +64,7 @@ int main(int argc, char **argv) {
                 printf("[CORETB] Generate VCD file in build folder\n");
                 tb->OpenTrace(vcdFile);
         }
-        int exitCode = tb->SimulateCore(s_progfile, timeout);
+        int exitCode = tb->SimulateCore(s_progfile, timeout, s_signature);
         tb->CloseTrace();
         delete tb;
         return exitCode;

@@ -17,6 +17,7 @@
 #include <chrono>
 #include <atomic>
 #include <signal.h>
+#include "aelf.h"
 #include "coretb.h"
 #include "defines.h"
 
@@ -33,7 +34,7 @@ void intHandler(int signo){
 CORETB::CORETB() : Testbench(TBFREQ, TBTS), m_exitCode(-1) {
 }
 // -----------------------------------------------------------------------------
-int CORETB::SimulateCore(const std::string &progfile, const unsigned long max_time) {
+int CORETB::SimulateCore(const std::string &progfile, const unsigned long max_time, const std::string &s_signature) {
         bool ok        = false;
         bool notimeout = max_time == 0;
         // Initial values
@@ -49,6 +50,12 @@ int CORETB::SimulateCore(const std::string &progfile, const unsigned long max_ti
         sigaction(SIGINT, &saStruct, NULL);
         // -------------------------------------------------------------
         LoadMemory(progfile);
+        m_tohost   = getSymbol(progfile.data(), "tohost");
+        m_fromhost = getSymbol(progfile.data(), "fromhost");
+        if (!s_signature.empty()) {
+                m_begin_signature = getSymbol(progfile.data(), "begin_signature");
+                m_end_signature   = getSymbol(progfile.data(), "end_signature");
+        }
         Reset();
         while ((getTime() <= max_time || notimeout) && !Verilated::gotFinish() && !quit) {
                 Tick();
@@ -58,6 +65,10 @@ int CORETB::SimulateCore(const std::string &progfile, const unsigned long max_ti
         }
         // -------------------------------------------------------------
         Tick();
+        Tick();
+        Tick();
+        if (!s_signature.empty())
+                DumpSignature(s_signature);
         return PrintExitMessage(ok, max_time);
 }
 // -----------------------------------------------------------------------------
@@ -78,7 +89,7 @@ uint32_t CORETB::PrintExitMessage(const bool ok, const unsigned long max_time) {
 // -----------------------------------------------------------------------------
 bool CORETB::CheckTOHOST(bool &ok) {
         svSetScope(svGetScopeFromName("TOP.top.memory")); // Set the scope before using DPI functions
-        uint32_t tohost = ram_v_dpi_read_word(TOHOST);
+        uint32_t tohost = ram_v_dpi_read_word(m_tohost);
         if (tohost == 0)
                 return false;
         bool isPtr = (tohost - MEMSTART) <= MEMSZ; // check if the value is inside the memory region = is a pointer
@@ -91,8 +102,8 @@ bool CORETB::CheckTOHOST(bool &ok) {
                 const uint32_t data1 = data0 + 8; // 64-bit aligned
                 if (ram_v_dpi_read_word(data0) == SYSCALL and ram_v_dpi_read_word(data1) == 1) {
                         SyscallPrint(data0);
-                        ram_v_dpi_write_word(FROMHOST, 1); // reset to inital state
-                        ram_v_dpi_write_word(TOHOST, 0);   // reset to inital state
+                        ram_v_dpi_write_word(m_fromhost, 1); // reset to inital state
+                        ram_v_dpi_write_word(m_tohost, 0);   // reset to inital state
                 } else {
                         _exit = true;
                 }
@@ -121,4 +132,17 @@ void CORETB::LoadMemory(const std::string &progfile) {
         svSetScope(svGetScopeFromName("TOP.top.memory"));
         ram_v_dpi_load(progfile.data());
         printf(ANSI_COLOR_YELLOW "Executing file: %s\n" ANSI_COLOR_RESET, progfile.c_str());
+}
+// -----------------------------------------------------------------------------
+void CORETB::DumpSignature(const std::string &signature) {
+        FILE *fp = fopen(signature.data(), "w");
+        if (fp == NULL) {
+                fprintf(stderr, ANSI_COLOR_RED "Unable to open the signature file. \n" ANSI_COLOR_RESET);
+                return;
+        }
+        // Signature from riscv-compliance: 1 word per line
+        for (uint32_t idx = m_begin_signature; idx < m_end_signature; idx = idx + 4) {
+                fprintf(fp, "%08x\n", ram_v_dpi_read_word(idx));
+        }
+        fclose(fp);
 }
