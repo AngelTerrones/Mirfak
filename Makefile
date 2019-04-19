@@ -1,14 +1,13 @@
 # ------------------------------------------------------------------------------
 # Copyright (c) 2019 Angel Terrones <angelterrones@gmail.com>
 # ------------------------------------------------------------------------------
-include tests/verilator/pprint.mk
 SHELL=bash
 
 # ------------------------------------------------------------------------------
 SUBMAKE			= $(MAKE) --no-print-directory
 ROOT			= $(shell pwd)
 BFOLDER			= $(ROOT)/build
-VCOREMK			= $(ROOT)/tests/verilator
+VCOREDIR		= $(ROOT)/simulator/verilator
 
 TBEXE			= $(BFOLDER)/core.exe --timeout 50000000 --file
 UCGEN			= $(ROOT)/rtl/ucontrolgen.py
@@ -24,6 +23,7 @@ RVXTRASF       = $(ROOT)/tests/extra-tests
 export RISCV_PREFIX ?= riscv-none-embed-
 export ROOT
 export UFILE = $(UCONTROL)
+export TARGET_FOLDER = $(VCOREDIR)
 
 # ------------------------------------------------------------------------------
 # targets
@@ -65,7 +65,7 @@ core-sim-compliance-rv32ui: build-core
 # verilate and build
 # ------------------------------------------------------------------------------
 build-core: $(UCONTROL)
-	+@$(SUBMAKE) -C $(VCOREMK)
+	+@$(SUBMAKE) -C $(VCOREDIR)
 
 # ------------------------------------------------------------------------------
 # verilate and build
@@ -77,7 +77,7 @@ $(UCONTROL): $(UCGEN)
 # clean
 # ------------------------------------------------------------------------------
 clean:
-	@$(SUBMAKE) -C $(VCOREMK) clean
+	@$(SUBMAKE) -C $(VCOREDIR) clean
 
 distclean: clean
 	@$(SUBMAKE) -C $(RVCOMPLIANCE) clean
