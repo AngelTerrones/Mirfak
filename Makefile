@@ -1,23 +1,29 @@
 # ------------------------------------------------------------------------------
-# Copyright (c) 2018 Angel Terrones <angelterrones@gmail.com>
+# Copyright (c) 2019 Angel Terrones <angelterrones@gmail.com>
 # ------------------------------------------------------------------------------
-include tests/verilator/pprint.mk
 SHELL=bash
 
 # ------------------------------------------------------------------------------
-.PROJECTNAME = Mirfak
-# ------------------------------------------------------------------------------
-.SUBMAKE		= $(MAKE) --no-print-directory
-.PWD			= $(shell pwd)
-.BFOLDER		= build
-.RVTESTSF		= tests/riscv-tests
-.RVBENCHMARKSF	= tests/benchmarks
-.RVXTRASF       = tests/extra-tests
-.MKTB			= tests/verilator/build.mk
-.TBEXE			= $(.BFOLDER)/$(.PROJECTNAME).exe --timeout 50000000 --file
-.UCGEN			= hardware/ucontrolgen.py
-.PYTHON			= python3
-.UCONTROL		= $(.BFOLDER)/ucontrol.mem
+SUBMAKE			= $(MAKE) --no-print-directory
+ROOT			= $(shell pwd)
+BFOLDER			= $(ROOT)/build
+VCOREDIR		= $(ROOT)/simulator/verilator
+
+TBEXE			= $(BFOLDER)/core.exe --timeout 50000000 --file
+UCGEN			= $(ROOT)/rtl/ucontrolgen.py
+PYTHON			= python3
+UCONTROL		= $(BFOLDER)/ucontrol.mem
+
+# Compliance tests
+RVCOMPLIANCE = $(ROOT)/tests/riscv-compliance
+# xint test
+RVXTRASF       = $(ROOT)/tests/extra-tests
+
+# export variables
+export RISCV_PREFIX ?= riscv-none-embed-
+export ROOT
+export UFILE = $(UCONTROL)
+export TARGET_FOLDER = $(VCOREDIR)
 
 # ------------------------------------------------------------------------------
 # targets
@@ -25,56 +31,54 @@ SHELL=bash
 help:
 	@echo -e "--------------------------------------------------------------------------------"
 	@echo -e "Please, choose one target:"
-	@echo -e "- compile-tests:  Compile RISC-V assembler tests, benchmarks and extra tests."
-	@echo -e "- verilate:       Generate C++ core model."
-	@echo -e "- build-model:    Build C++ core model."
-	@echo -e "- run-tests:      Execute assembler tests, benchmarks and extra tests."
+	@echo -e "- install-compliance:         Clone the riscv-compliance test."
+	@echo -e "- build-model:                Build C++ core model."
+	@echo -e "- core-sim-compliance:        Execute the compliance tests."
+	@echo -e "- core-sim-compliance-rv32i:  Execute the RV32I compliance tests."
+	@echo -e "- core-sim-compliance-rv32im: Execute the RV32IM compliance tests."
+	@echo -e "- core-sim-compliance-rv32mi: Execute machine mode compliance tests."
+	@echo -e "- core-sim-compliance-rv32ui: Execute the RV32I compliance tests (redundant)."
 	@echo -e "--------------------------------------------------------------------------------"
 
-compile-tests:
-	+@$(.SUBMAKE) -C $(.RVTESTSF)
-	+@$(.SUBMAKE) -C $(.RVBENCHMARKSF)
-	+@$(.SUBMAKE) -C $(.RVXTRASF)
+# ------------------------------------------------------------------------------
+# Install repo
+# ------------------------------------------------------------------------------
+install-compliance:
+	@./scripts/install_compliance
+# ------------------------------------------------------------------------------
+# compliance tests
+# ------------------------------------------------------------------------------
+core-sim-compliance: core-sim-compliance-rv32i core-sim-compliance-rv32ui core-sim-compliance-rv32im core-sim-compliance-rv32mi
+
+core-sim-compliance-rv32i: build-core
+	@$(SUBMAKE) -C $(RVCOMPLIANCE) variant RISCV_TARGET=mirfak RISCV_DEVICE=rv32i RISCV_ISA=rv32i
+
+core-sim-compliance-rv32im: build-core
+	@$(SUBMAKE) -C $(RVCOMPLIANCE) variant RISCV_TARGET=mirfak RISCV_DEVICE=rv32im RISCV_ISA=rv32im
+
+core-sim-compliance-rv32mi: build-core
+	@$(SUBMAKE) -C $(RVCOMPLIANCE) variant RISCV_TARGET=mirfak RISCV_DEVICE=rv32mi RISCV_ISA=rv32mi
+
+core-sim-compliance-rv32ui: build-core
+	@$(SUBMAKE) -C $(RVCOMPLIANCE) variant RISCV_TARGET=mirfak RISCV_DEVICE=rv32ui RISCV_ISA=rv32ui
+# ------------------------------------------------------------------------------
+# verilate and build
+# ------------------------------------------------------------------------------
+build-core: $(UCONTROL)
+	+@$(SUBMAKE) -C $(VCOREDIR)
 
 # ------------------------------------------------------------------------------
 # verilate and build
-$(.UCONTROL): $(.UCGEN)
-	@mkdir -p $(.BFOLDER)
-	@$(.PYTHON) $(.UCGEN) $(.UCONTROL)
+$(UCONTROL): $(UCGEN)
+	@mkdir -p $(BFOLDER)
+	@$(PYTHON) $(UCGEN) $(UCONTROL)
 
-verilate: $(.UCONTROL)
-	@printf "%b" "$(.MSJ_COLOR)Building RTL (Modules) for Verilator$(.NO_COLOR)\n"
-	@mkdir -p $(.BFOLDER)
-	+@$(.SUBMAKE) -f $(.MKTB) build-vlib BUILD_DIR=$(.BFOLDER) UFILE=$(.UCONTROL)
-
-build-model: verilate
-	+@$(.SUBMAKE) -f $(.MKTB) build-core BUILD_DIR=$(.BFOLDER) EXE=$(.PROJECTNAME)
-
-# ------------------------------------------------------------------------------
-# verilator tests
-run-tests: compile-tests build-model
-	$(eval .RVTESTS:=$(shell find $(.RVTESTSF) -name "rv32ui*.elf" -o -name "rv32um*.elf" -o -name "rv32mi*.elf" ! -name "*breakpoint*.elf"))
-	$(eval .RVBENCHMARKS:=$(shell find $(.RVBENCHMARKSF) -name "*.riscv"))
-	$(eval .RVXTRAS:=$(shell find $(.RVXTRASF) -name "*.riscv"))
-
-	@for file in $(.RVTESTS) $(.RVBENCHMARKS) $(.RVXTRAS); do											\
-		$(.TBEXE) $$file --mem-delay $$delay > /dev/null;														\
-		if [ $$? -eq 0 ]; then																											\
-			printf "%-50b %b\n" $$file "$(.OK_COLOR)$(.OK_STRING)$(.NO_COLOR)";				\
-		else																																				\
-			printf "%-50s %b" $$file "$(.ERROR_COLOR)$(.ERROR_STRING)$(.NO_COLOR)\n";	\
-		fi;																																					\
-	done
 # ------------------------------------------------------------------------------
 # clean
 # ------------------------------------------------------------------------------
 clean:
-	@rm -rf $(.BFOLDER)
+	@$(SUBMAKE) -C $(VCOREDIR) clean
 
 distclean: clean
-	@find . | grep -E "(__pycache__|\.pyc|\.pyo|\.cache)" | xargs rm -rf
-	@$(.SUBMAKE) -C $(.RVTESTSF) clean
-	@$(.SUBMAKE) -C $(.RVBENCHMARKSF) clean
-	@$(.SUBMAKE) -C $(.RVXTRASF) clean
-
-.PHONY: verilate compile-tests build-model run-tests clean distclean
+	@$(SUBMAKE) -C $(RVCOMPLIANCE) clean
+	@rm -rf $(BFOLDER)
