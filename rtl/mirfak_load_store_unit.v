@@ -21,6 +21,8 @@
 `default_nettype none
 `timescale 1 ns / 1 ps
 
+`include "mirfak_defines.v"
+
 module mirfak_load_store_unit (
                                // pipeline interface
                                input wire [31:0] lsu_address_i,
