@@ -27,8 +27,7 @@ module mirfak_core #(
                      parameter [31:0] HART_ID         = 0,
                      parameter [31:0] RESET_ADDR      = 32'h8000_0000,
                      parameter [0:0]  ENABLE_COUNTERS = 1,
-                     parameter [0:0]  ENABLE_M_ISA    = 1,
-                     parameter        UCONTROL        = "ucontrol.mem"
+                     parameter [0:0]  ENABLE_M_ISA    = 1
                      )(
                        input wire         clk_i,
                        input wire         rst_i,
@@ -275,8 +274,7 @@ module mirfak_core #(
                         .wb_mtval_i          (wb_mtval),
                         .wb_bubble_i         (wb_bubble));
     // Control
-    mirfak_controller #(.ENABLE_MULTDIV(ENABLE_M_ISA),
-                        .UCONTROL(UCONTROL)
+    mirfak_controller #(.ENABLE_MULTDIV(ENABLE_M_ISA)
                         ) control (// Outputs
                                    .id_control_o     (id_control),
                                    .id_fwd_a_sel_o   (id_fwd_a_sel),
