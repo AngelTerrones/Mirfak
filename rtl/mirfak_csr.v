@@ -21,6 +21,8 @@
 `default_nettype none
 `timescale 1 ns / 1 ps
 
+`include "mirfak_defines.v"
+
 module mirfak_csr #(
                     parameter [31:0] HART_ID = 0,
                     parameter [0:0]  ENABLE_COUNTERS = 1,

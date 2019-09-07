@@ -21,6 +21,8 @@
 `default_nettype none
 `timescale 1 ns / 1 ps
 
+`include "mirfak_defines.v"
+
 module mirfak_alu (
                    // Inputs
                    input wire [31:0] operand_a_i,

@@ -21,6 +21,8 @@
 `default_nettype none
 `timescale 1 ns / 1 ps
 
+`include "mirfak_defines.v"
+
 module mirfak_id_stage (
                         input wire            clk_i,
                         input wire            rst_i,
