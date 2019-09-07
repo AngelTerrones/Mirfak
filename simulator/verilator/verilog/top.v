@@ -14,7 +14,6 @@ module top #(
              parameter [31:0] RESET_ADDR      = 32'h8000_0000,
              parameter [0:0]  ENABLE_COUNTERS = 1,
              parameter [0:0]  ENABLE_M_ISA    = 1,
-             parameter        UCONTROL        = "ucontrol.list",
              parameter [31:0] MEM_SIZE        = 32'h0100_0000
              )(
                input wire clk_i,
@@ -54,8 +53,7 @@ module top #(
                   .HART_ID              (HART_ID[31:0]),
                   .RESET_ADDR           (RESET_ADDR[31:0]),
                   .ENABLE_COUNTERS      (ENABLE_COUNTERS[0:0]),
-                  .ENABLE_M_ISA         (ENABLE_M_ISA[0:0]),
-                  .UCONTROL             (UCONTROL)
+                  .ENABLE_M_ISA         (ENABLE_M_ISA[0:0])
                   ) cpu (/*AUTOINST*/
                          // Outputs
                          .iwbm_addr_o           (iwbm_addr_o[31:0]),

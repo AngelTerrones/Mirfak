@@ -10,9 +10,7 @@ BFOLDER			= $(ROOT)/build
 VCOREDIR		= $(ROOT)/simulator/verilator
 
 TBEXE			= $(BFOLDER)/core.exe --timeout 50000000 --file
-UCGEN			= $(ROOT)/rtl/ucontrolgen.py
 PYTHON			= python3
-UCONTROL		= $(BFOLDER)/ucontrol.mem
 
 # Compliance tests
 RVCOMPLIANCE = $(ROOT)/tests/riscv-compliance
@@ -22,7 +20,6 @@ RVXTRASF       = $(ROOT)/tests/extra-tests
 # export variables
 export RISCV_PREFIX ?= riscv-none-embed-
 export ROOT
-export UFILE = $(UCONTROL)
 export TARGET_FOLDER = $(VCOREDIR)
 
 # ------------------------------------------------------------------------------
@@ -64,14 +61,9 @@ core-sim-compliance-rv32ui: build-core
 # ------------------------------------------------------------------------------
 # verilate and build
 # ------------------------------------------------------------------------------
-build-core: $(UCONTROL)
-	+@$(SUBMAKE) -C $(VCOREDIR)
-
-# ------------------------------------------------------------------------------
-# verilate and build
-$(UCONTROL): $(UCGEN)
+build-core:
 	@mkdir -p $(BFOLDER)
-	@$(PYTHON) $(UCGEN) $(UCONTROL)
+	+@$(SUBMAKE) -C $(VCOREDIR)
 
 # ------------------------------------------------------------------------------
 # clean

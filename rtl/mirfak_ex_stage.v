@@ -21,6 +21,8 @@
 `default_nettype none
 `timescale 1 ns / 1 ps
 
+`include "mirfak_defines.v"
+
 module mirfak_ex_stage #(parameter [0:0]  ENABLE_MULTDIV = 1
                          )(
                            input wire            clk_i,

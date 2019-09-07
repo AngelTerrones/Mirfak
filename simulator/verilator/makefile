@@ -11,13 +11,12 @@ RTLDIR		:= $(ROOT)/rtl
 TBDIR		:= verilog
 VSOURCES	:= $(shell find $(RTLDIR) $(TBDIR) -name "*.v")
 VTOP		:= $(TBDIR)/top.v
-UCONTROL	:= -GUCONTROL="\"$(UFILE)"\"
 #--------------------------------------------------
 OUT			:= $(ROOT)/build
 VOBJ		:= $(OUT)/obj_dir_$(EXE)
 SUBMAKE		:= $(MAKE) --no-print-directory --directory=$(VOBJ) -f
 VERILATE	:= verilator -O3 --trace -Wall -Wno-fatal --x-assign 1 -cc -y $(RTLDIR) -y $(TBDIR) \
-							-CFLAGS "-std=c++11 -O3 -DDPI_DLLISPEC= -DDPI_DLLESPEC=" -Mdir $(VOBJ) $(UCONTROL)
+							-CFLAGS "-std=c++11 -O3 -DDPI_DLLISPEC= -DDPI_DLLESPEC=" -Mdir $(VOBJ)
 
 #--------------------------------------------------
 # C++ build

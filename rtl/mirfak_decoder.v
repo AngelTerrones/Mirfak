@@ -21,23 +21,18 @@
 `default_nettype none
 `timescale 1 ns / 1 ps
 
+`include "mirfak_defines.v"
+
 module mirfak_decoder #(
-                        parameter [0:0]  ENABLE_MULTDIV = 1,
-                        parameter UCONTROL = ""
+                        parameter [0:0]  ENABLE_MULTDIV = 1
                         )(// verilator lint_off UNUSED
                           input wire [31:0]     id_instruction_i,
                           // verilator lint_on UNUSED
                           output reg [`CTRL_SZ] id_control_o
                           );
     //--------------------------------------------------------------------------
-    reg [`CTRL_SZ] ucontrol [0:127];
-    reg [6:0]      is_instr;
     wire           is_lui, is_auipc, is_jal, is_jalr, is_branch, is_load;
     wire           is_store, is_ri, is_rr, is_fence, is_system, is_m;
-    //
-    initial begin
-        $readmemb(UCONTROL, ucontrol);
-    end
     //
     assign is_lui     = id_instruction_i[6:0] == 7'b0110111;
     assign is_auipc   = id_instruction_i[6:0] == 7'b0010111;
@@ -56,23 +51,97 @@ module mirfak_decoder #(
         // upper bits: instruction type
         // low bits:   funct3
         case (1'b1)
-            is_lui:    is_instr[6:3]  = 0;  // lui
-            is_auipc:  is_instr[6:3]  = 1;  // auipc
-            is_jal:    is_instr[6:3]  = 2;  // jal
-            is_jalr:   is_instr[6:3]  = 3;  // jalr
-            is_branch: is_instr[6:3]  = 4;  // branch
-            is_load:   is_instr[6:3]  = 5;  // load
-            is_store:  is_instr[6:3]  = 6;  // store
-            is_ri:     is_instr[6:3]  = 7;  // RI
-            is_rr:     is_instr[6:3]  = 8;  // RR
-            is_fence:  is_instr[6:3]  = 9;  // fence
-            is_system: is_instr[6:3]  = 10; // system
-            is_m:      is_instr[6:3]  = 11; // system
-            default:   is_instr[6:3]  = 15; // invalid one
+            is_lui:    begin
+                id_control_o = 32'b00001000000000000000000000110111;
+            end
+            is_auipc:  begin
+                id_control_o = 32'b00001000000000000000000000110101;
+            end
+            is_jal:    begin
+                id_control_o = 32'b00001100000000000000000111000101;
+            end
+            is_jalr:   begin
+                id_control_o = 32'b00001100000000000000000110000100;
+            end
+            is_branch: begin
+                case (id_instruction_i[14:12])
+                    3'b000: id_control_o  = 32'b00000000000100000000000000100101;
+                    3'b001: id_control_o  = 32'b00000000001000000000000000100101;
+                    3'b100: id_control_o  = 32'b00000000010000000000000000100101;
+                    3'b101: id_control_o  = 32'b00000000100000000000000000100101;
+                    3'b110: id_control_o  = 32'b00000001000000000000000000100101;
+                    3'b111: id_control_o  = 32'b00000010000000000000000000100101;
+                    default: id_control_o = 32'b10000000000000000000000000000000;
+                endcase
+            end
+            is_load:   begin
+                case (id_instruction_i[14:12])
+                    3'b000: id_control_o  = 32'b00001000000000010000000010000100;
+                    3'b001: id_control_o  = 32'b00001000000000010000000010000100;
+                    3'b010: id_control_o  = 32'b00001000000000010000000010000100;
+                    3'b100: id_control_o  = 32'b00001000000000010000000010000100;
+                    3'b101: id_control_o  = 32'b00001000000000010000000010000100;
+                    default: id_control_o = 32'b10000000000000000000000000000000;
+                endcase
+            end
+            is_store:  begin
+                case (id_instruction_i[14:12])
+                    3'b000: id_control_o  = 32'b00000000000000110000000000010100;
+                    3'b001: id_control_o  = 32'b00000000000000110000000000010100;
+                    3'b010: id_control_o  = 32'b00000000000000110000000000010100;
+                    default: id_control_o = 32'b10000000000000000000000000000000;
+                endcase
+            end
+            is_ri:     begin
+                case (id_instruction_i[14:12])
+                    3'b000: id_control_o = 32'b00001000000000000000000000000100; // addi
+                    3'b001: id_control_o = 32'b00001000000000001000000000000100; // slli
+                    3'b010: id_control_o = 32'b00001000000000001110000000000100; // slti
+                    3'b011: id_control_o = 32'b00001000000000001100000000000100; // sltiu
+                    3'b100: id_control_o = 32'b00001000000000000100100000000100; // xori
+                    3'b101: id_control_o = 32'b00001000000000001001000000000100; // srli_srai
+                    3'b110: id_control_o = 32'b00001000000000000100010000000100; // ori
+                    3'b111: id_control_o = 32'b00001000000000000100000000000100; // andi
+                endcase
+            end
+            is_rr:     begin
+                case (id_instruction_i[14:12])
+                    3'b000: id_control_o = 32'b00001000000000000000001000000000; // add_sub
+                    3'b001: id_control_o = 32'b00001000000000001000000000000000; // sll
+                    3'b010: id_control_o = 32'b00001000000000001110000000000000; // slt
+                    3'b011: id_control_o = 32'b00001000000000001100000000000000; // sltu
+                    3'b100: id_control_o = 32'b00001000000000000100100000000000; // xor
+                    3'b101: id_control_o = 32'b00001000000000001001000000000000; // srl_sra
+                    3'b110: id_control_o = 32'b00001000000000000100010000000000; // or
+                    3'b111: id_control_o = 32'b00001000000000000100000000000000; // and
+                endcase
+            end
+            is_fence:  begin
+                case (id_instruction_i[14:12])
+                    3'b000: id_control_o  = 32'b00000000000000000000000000000000;
+                    3'b001: id_control_o  = 32'b00100000000000000000000000000000;
+                    default: id_control_o = 32'b10000000000000000000000000000000;
+                endcase
+            end
+            is_system: begin
+                case (id_instruction_i[14:12])
+                    3'b000: id_control_o  = 32'b00010000000000000000000000000000;
+                    3'b001: id_control_o  = 32'b00001000000001000000000100001100;
+                    3'b010: id_control_o  = 32'b00001000000010000000000100001100;
+                    3'b011: id_control_o  = 32'b00001000000011000000000100001100;
+                    3'b101: id_control_o  = 32'b00001000000001000000000100001100;
+                    3'b110: id_control_o  = 32'b00001000000010000000000100001100;
+                    3'b111: id_control_o  = 32'b00001000000011000000000100001100;
+                    default: id_control_o = 32'b10000000000000000000000000000000;
+                endcase
+            end
+            is_m:      begin
+                id_control_o = 32'b01001000000000000000000000000000;
+            end
+            default:   begin
+                id_control_o = 32'b10000000000000000000000000000000;
+            end
         endcase
-        is_instr[2:0] = id_instruction_i[14:12];
-        //
-        id_control_o = ucontrol[is_instr];
     end
     //--------------------------------------------------------------------------
 endmodule

@@ -21,9 +21,10 @@
 `default_nettype none
 `timescale 1 ns / 1 ps
 
+`include "mirfak_defines.v"
+
 module mirfak_controller #(
-                           parameter [0:0]  ENABLE_MULTDIV = 1,
-                           parameter UCONTROL = ""
+                           parameter [0:0]  ENABLE_MULTDIV = 1
                            )(
                              input wire [31:0]      id_instruction_i,
                              // control signal to ID stage
@@ -94,8 +95,7 @@ module mirfak_controller #(
         ifid_clear_o = (!if_ready && id_ready) || wb_exception_i || wb_xret_i || id_bj_taken_i;
     end
     //
-    mirfak_decoder #(.ENABLE_MULTDIV(ENABLE_MULTDIV),
-                     .UCONTROL(UCONTROL)
+    mirfak_decoder #(.ENABLE_MULTDIV(ENABLE_MULTDIV)
                      ) decoder (// Outputs
                                 .id_control_o     (id_control_o),
                                 // Inputs
