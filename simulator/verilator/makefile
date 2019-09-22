@@ -29,11 +29,7 @@ VINCD		:= $(VROOT)/include
 VINC		:= -I$(VINCD) -I$(VINCD)/vltstd -I$(VOBJ)
 
 #--------------------------------------------------
-ifeq ($(OS),Windows_NT)
-	INCS := $(VINC) -Itests/verilator -I /mingw$(shell getconf LONG_BIT)/include/libelf
-else
-	INCS := $(VINC) -Itests/verilator
-endif
+INCS := $(VINC) -Itests/verilator
 
 #--------------------------------------------------
 VOBJS		:= $(VOBJ)/verilated.o $(VOBJ)/verilated_vcd_c.o $(VOBJ)/verilated_dpi.o

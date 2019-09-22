@@ -8,8 +8,6 @@ SUBMAKE			= $(MAKE) --no-print-directory
 ROOT			= $(shell pwd)
 BFOLDER			= $(ROOT)/build
 VCOREDIR		= $(ROOT)/simulator/verilator
-
-TBEXE			= $(BFOLDER)/core.exe --timeout 50000000 --file
 PYTHON			= python3
 
 # Compliance tests
@@ -29,7 +27,7 @@ help:
 	@echo -e "--------------------------------------------------------------------------------"
 	@echo -e "Please, choose one target:"
 	@echo -e "- install-compliance:         Clone the riscv-compliance test."
-	@echo -e "- build-model:                Build C++ core model."
+	@echo -e "- build-core:                 Build C++ core model."
 	@echo -e "- core-sim-compliance:        Execute the compliance tests."
 	@echo -e "- core-sim-compliance-rv32i:  Execute the RV32I compliance tests."
 	@echo -e "- core-sim-compliance-rv32im: Execute the RV32IM compliance tests."
