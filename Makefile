@@ -18,7 +18,7 @@ RVCOMPLIANCE = $(ROOT)/tests/riscv-compliance
 RVXTRASF       = $(ROOT)/tests/extra-tests
 
 # export variables
-export RISCV_PREFIX ?= riscv-none-embed-
+export RISCV_PREFIX ?= $(RVGCC_PATH)/riscv64-unknown-elf-
 export ROOT
 export TARGET_FOLDER = $(VCOREDIR)
 
