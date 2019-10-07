@@ -33,6 +33,7 @@ help:
 	@echo -e "- core-sim-compliance-rv32im: Execute the RV32IM compliance tests."
 	@echo -e "- core-sim-compliance-rv32mi: Execute machine mode compliance tests."
 	@echo -e "- core-sim-compliance-rv32ui: Execute the RV32I compliance tests (redundant)."
+	@echo -e "- run-extra:                  Execute test for the external interrupts"
 	@echo -e "--------------------------------------------------------------------------------"
 
 # ------------------------------------------------------------------------------
@@ -56,6 +57,15 @@ core-sim-compliance-rv32mi: build-core
 
 core-sim-compliance-rv32ui: build-core
 	@$(SUBMAKE) -C $(RVCOMPLIANCE) variant RISCV_TARGET=mirfak RISCV_DEVICE=rv32ui RISCV_ISA=rv32ui
+# ------------------------------------------------------------------------------
+# Extra test
+# ------------------------------------------------------------------------------
+run-extra: build-core .extra
+	./build/core.exe --file $(RVXTRASF)/interrupts.riscv
+
+.extra:
+	$(SUBMAKE) -C $(RVXTRASF)
+
 # ------------------------------------------------------------------------------
 # verilate and build
 # ------------------------------------------------------------------------------
