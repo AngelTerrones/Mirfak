@@ -11,5 +11,6 @@ if [ ! -d "$RVCOMPLIANCE" ]; then
 else
     cd $RVCOMPLIANCE
     git checkout nht-cores
+    git pull
     echo "Done!"
 fi
